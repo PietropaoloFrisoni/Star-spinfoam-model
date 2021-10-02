@@ -151,13 +151,14 @@ function volumes_assemble(conf::Configuration, chains_to_assemble::Int64)
   CSV.write(volumes_sq_table_full_path, volumes_sq_dataframe)
   
   # spread is here
-  # I compute spread by combining squared and volumes which were previously combined between multiple chains (seems logic) 
-  volumes_spread[1] = sqrt(abs(volumes_sq_all_chains[1] - volumes_all_chains[1]^2)) # for j=0.5 sometimes the difference is extremely close to zero but negative (degen. case)
+  # I compute spread by combining squared and volumes which were previously combined between multiple chains 
+  # for j=0.5 sometimes the difference is extremely close to zero but negative (degen. case), this is why the abs() is necessary
+  volumes_spread[1] = sqrt(abs(volumes_sq_all_chains[1] - volumes_all_chains[1]^2)) 
   
   @save "$(conf.volumes_spread_folder)/volumes_spread_$(chains_to_assemble)_chains_combined.jld2" volumes_spread
   
   volumes_spread_dataframe = DataFrame(to_rename = volumes_spread)
-  rename!(volumes_spread_dataframe, :to_rename => column_name)  #column name defined above
+  rename!(volumes_spread_dataframe, :to_rename => column_name)  
   
   volumes_spread_table_name = "/volumes_spread_$(chains_to_assemble)_chains_combined.csv"
   volumes_spread_table_full_path = conf.tables_folder*volumes_spread_table_name
@@ -172,8 +173,6 @@ end
 
 
 
-
-# this should run only on master process
 function volumes_correlations_assemble(conf::Configuration, chains_to_assemble::Int64)
 
   volumes_table_name = "/volumes_$(chains_to_assemble)_chains_combined.csv" 
@@ -210,7 +209,7 @@ function volumes_correlations_assemble(conf::Configuration, chains_to_assemble::
   
   volumes_correlations_dataframe = DataFrame(to_rename = volumes_correlations)
   column_name = "j=$(conf.j)"
-  rename!(volumes_correlations_dataframe, :to_rename => column_name)  #column name defined above
+  rename!(volumes_correlations_dataframe, :to_rename => column_name)  
   
   volumes_correlations_table_name = "/volumes_correlations_node_1=$(conf.volumes_correlations_node_1)_node_2=$(conf.volumes_correlations_node_2)_$(chains_to_assemble)_chains_combined.csv"
   volumes_correlations_table_full_path = conf.tables_folder*volumes_correlations_table_name

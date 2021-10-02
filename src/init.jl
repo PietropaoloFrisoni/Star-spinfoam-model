@@ -46,7 +46,7 @@ mutable struct Configuration
     volumes_spread_folder::String
     volumes_pseudo_correlations_folder::String
     volumes_correlations_folder::String
-    
+
 end
 
 

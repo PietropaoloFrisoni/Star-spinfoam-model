@@ -5,8 +5,7 @@ function compute_angles_function!(j, D, draws, number_of_draws, angles, angles_s
     
   for i = 1:20  
     
-     for n = 1:number_of_draws    
-     #if (draws[n,i] < 1 || draws[n,i] > (D))  error("Out of limits!") end   
+     for n = 1:number_of_draws       
                  
      @inbounds all_angles[n,i] = angles_vector_values[1][j][draws[n,i]]*draws[n,21]     
      @inbounds all_squared_angles[n,i] = angles_vector_values[2][j][draws[n,i]]*draws[n,21]  
@@ -22,7 +21,6 @@ function compute_angles_function!(j, D, draws, number_of_draws, angles, angles_s
   @save "$(angles_sq_folder)/angles_sq_chain=$(chain_id + total_angles_already_stored).jld2" angles_sq
   
 end
-
 
 
 
@@ -54,10 +52,6 @@ end
 
 
 
-
-
-
-# this should run only on master process
 function angles_assemble(conf::Configuration, chains_to_assemble::Int64)
 
   angles_all_chains = zeros(Float64, 20, chains_to_assemble) 
@@ -104,13 +98,13 @@ function angles_assemble(conf::Configuration, chains_to_assemble::Int64)
   CSV.write(angles_sq_table_full_path, angles_sq_dataframe)
   
   # spread is here
-  # I compute spread by combining squared and angles which were previously combined between multiple chains (seems logic) 
+  # I compute spread by combining squared and angles which were previously combined between multiple chains
   angles_spread[:] .= sqrt.(angles_sq_all_chains[:] - angles_all_chains[:].^2)
   
   @save "$(conf.angles_spread_folder)/angles_spread_$(chains_to_assemble)_chains_combined.jld2" angles_spread
   
   angles_spread_dataframe = DataFrame(to_rename = angles_spread)
-  rename!(angles_spread_dataframe, :to_rename => column_name)  #column name defined above
+  rename!(angles_spread_dataframe, :to_rename => column_name)  
   
   angles_spread_table_name = "/angles_spread_$(chains_to_assemble)_chains_combined.csv"
   angles_spread_table_full_path = conf.tables_folder*angles_spread_table_name
@@ -125,11 +119,6 @@ end
 
 
 
-
-
-
-
-# this should run only on master process
 function angles_correlations_assemble(conf::Configuration, chains_to_assemble::Int64)
 
   angles_table_name = "/angles_$(chains_to_assemble)_chains_combined.csv"
@@ -158,7 +147,7 @@ function angles_correlations_assemble(conf::Configuration, chains_to_assemble::I
   
   @load "$(conf.angles_spread_folder)/angles_spread_$(chains_to_assemble)_chains_combined.jld2" angles_spread
   
-  # now we have everything to compute full correlations
+  # we have everything to compute full correlations
   
   angles_correlations = zeros(Float64, 20, 20)  
   
@@ -172,7 +161,7 @@ function angles_correlations_assemble(conf::Configuration, chains_to_assemble::I
   
   angles_correlations_dataframe = DataFrame(to_rename = angles_correlations_vector)
   column_name = "j=$(conf.j)"
-  rename!(angles_correlations_dataframe, :to_rename => column_name)  #column name defined above
+  rename!(angles_correlations_dataframe, :to_rename => column_name)  
   
   angles_correlations_table_name = "/angles_correlations_$(chains_to_assemble)_chains_combined.csv"
   angles_correlations_table_full_path = conf.tables_folder*angles_correlations_table_name

@@ -7,8 +7,13 @@ using Distributed
 if (nprocs() > length(Sys.cpu_info())) printstyled("WARNING: you are using more chains than available cores on this system. Performances will be affected\n"; bold = true, color = :red) end
 sleep(2)
 
-println("Precompiling files and packages...") 
+println("precompiling packages...") 
+@everywhere begin
+include("inc/pkgs.jl")
+end
+println("done\n") 
 
+println("precompiling code...") 
 @everywhere begin
 include("configs_to_compute.jl")
 include("inc/pkgs.jl")
@@ -21,10 +26,11 @@ include("src/operators_def.jl")
 include("src/angles.jl")
 include("src/volumes.jl")
 end
-
 println("done\n") 
-sleep(1)
+
 println("checking configurations to compute...") 
+
+check_on_preliminary_parameters(data_folder_path, verbosity_random_walk, verbosity_flux)
 
   @everywhere begin  
   
@@ -39,19 +45,15 @@ println("checking configurations to compute...")
   end # end everywhere
   
 println("done\n") 
-sleep(1)  
 
 println("creating folders...")
-
     for user_conf in Configurations    
     conf = init_config(user_conf, data_folder_path)        
     make_folders(conf)
-    end    
-    
+    end     
 println("done\n") 
 
 println("checking stored draws and operators...")   
-
   @everywhere begin  
     
     for user_conf in Configurations     
@@ -60,9 +62,8 @@ println("checking stored draws and operators...")
     end # cycle on configurations    
       
   end # end everywhere
-
 println("done\n") 
-sleep(1)
+
 println("-------------------------------------------------------------------------\n") 
 
 @everywhere begin
@@ -293,39 +294,41 @@ end # end everywhere --- PARALLELIZATION ENDS HERE
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
 
-  printstyled("All computations completed successfully!\n\n\n"; bold = true, color = :blue)
+printstyled("All computations completed successfully!\n\n\n"; bold = true, color = :blue)
+
+if (assemble_and_save_final_data == true)    
     
-  user_BF_angles_table = DataFrame()
-  user_BF_angles_spread_table = DataFrame()
-  user_BF_volumes_table = DataFrame()
-  user_BF_volumes_spread_table = DataFrame()  
+      user_BF_angles_table = DataFrame()
+      user_BF_angles_spread_table = DataFrame()
+      user_BF_volumes_table = DataFrame()
+      user_BF_volumes_spread_table = DataFrame()  
   
-  user_EPRL_angles_table = DataFrame()
-  user_EPRL_angles_spread_table = DataFrame()  
-  user_EPRL_volumes_table = DataFrame()
-  user_EPRL_volumes_spread_table = DataFrame()
+      user_EPRL_angles_table = DataFrame()
+      user_EPRL_angles_spread_table = DataFrame()  
+      user_EPRL_volumes_table = DataFrame()
+      user_EPRL_volumes_spread_table = DataFrame()
   
-  user_BF_volumes_correlations_table = DataFrame()
-  user_EPRL_volumes_correlations_table = DataFrame() 
-    
-  array = String[];
-  for i=1:20, j=1:20 
-  string = "C($(i),$(j))"
-  push!(array, string)        
-  end
-  user_BF_angles_correlations_table = DataFrame(nodes = array)
-  user_EPRL_angles_correlations_table = DataFrame(nodes = array)
+      user_BF_volumes_correlations_table = DataFrame()
+      user_EPRL_volumes_correlations_table = DataFrame() 
+        
+      array = String[];
+      for i=1:20, j=1:20 
+      string = "C($(i),$(j))"
+      push!(array, string)        
+      end
+      user_BF_angles_correlations_table = DataFrame(nodes = array)
+      user_EPRL_angles_correlations_table = DataFrame(nodes = array)
  
   
-  for user_conf in Configurations
+      for user_conf in Configurations
   
-    conf = init_config(user_conf, data_folder_path) 
+        conf = init_config(user_conf, data_folder_path) 
     
-    printstyled("\nStart assembling $(number_of_chains) chain(s) for:\nM=$(conf.M), j=$(conf.j), N=$(conf.N), b=$(conf.b), σ=$(conf.σ)\n"; color = :bold) 
+        printstyled("\nStart assembling $(number_of_chains) chain(s) for:\nM=$(conf.M), j=$(conf.j), N=$(conf.N), b=$(conf.b), σ=$(conf.σ)\n"; color = :bold) 
     
-      if (conf.add_chains == true)
-      println("\nEven if you chose to add chains, only $(number_of_chains) chains are assembled for every operator. This will change in future updates!\n")        
-      end        
+          if (conf.add_chains == true)
+          println("\nEven if you chose to add chains, only $(number_of_chains) chains are assembled for every operator. This will change in future updates!\n")        
+          end        
   
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------             
@@ -380,8 +383,8 @@ end # end everywhere --- PARALLELIZATION ENDS HERE
                 end 
             end  # if on volumes correlation computation      
                  
-    println("Done!\n")  
-    println("\n-------------------------------------------------------------------------")      
+        println("Done!\n")  
+        println("\n-------------------------------------------------------------------------")      
       
   end # end conf cycle
 
@@ -389,104 +392,109 @@ end # end everywhere --- PARALLELIZATION ENDS HERE
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------   
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
 
-  current_date = now()
-  store_final_data_path = "$(current_folder)/final_data/run_on:$(current_date)"
-  mkpath(store_final_data_path)
+      current_date = now()
+      store_final_data_path = "$(current_folder)/final_data/run_on:$(current_date)"
+      mkpath(store_final_data_path)
 
-  if (isempty(user_BF_angles_table) == false)
+      if (isempty(user_BF_angles_table) == false)
  
-   CSV.write("$(store_final_data_path)/user_BF_angles_table.csv", user_BF_angles_table)   
-   CSV.write("$(store_final_data_path)/user_BF_angles_spread_table.csv", user_BF_angles_spread_table)
+       CSV.write("$(store_final_data_path)/user_BF_angles_table.csv", user_BF_angles_table)   
+       CSV.write("$(store_final_data_path)/user_BF_angles_spread_table.csv", user_BF_angles_spread_table)
  
-   if (print_final_data_on_terminal == true)
-     println("These are the values of the BF angles that you asked for:\n", user_BF_angles_table, "\n")
-     println("...and these are the values of corresponding spread:\n", user_BF_angles_spread_table, "\n\n\n")
-   end
+       if (print_final_data_on_terminal == true)
+       println("These are the values of the BF angles that you asked for:\n", user_BF_angles_table, "\n")
+       println("...and these are the values of corresponding spread:\n", user_BF_angles_spread_table, "\n\n\n")
+       end
    
-  end
+      end
  
-  if (isempty(user_EPRL_angles_table) == false)
+      if (isempty(user_EPRL_angles_table) == false)
+     
+       CSV.write("$(store_final_data_path)/user_EPRL_angles_table.csv", user_EPRL_angles_table)   
+       CSV.write("$(store_final_data_path)/user_EPRL_angles_spread_table.csv", user_EPRL_angles_spread_table)
  
-   CSV.write("$(store_final_data_path)/user_EPRL_angles_table.csv", user_EPRL_angles_table)   
-   CSV.write("$(store_final_data_path)/user_EPRL_angles_spread_table.csv", user_EPRL_angles_spread_table)
- 
-   if (print_final_data_on_terminal == true)
-     println("These are the values of the EPRL angles that you asked for:\n", user_EPRL_angles_table, "\n")
-     println("...and these are the values of corresponding spread:\n", user_EPRL_angles_spread_table, "\n\n\n")
-   end
+       if (print_final_data_on_terminal == true)
+       println("These are the values of the EPRL angles that you asked for:\n", user_EPRL_angles_table, "\n")
+       println("...and these are the values of corresponding spread:\n", user_EPRL_angles_spread_table, "\n\n\n")
+       end
    
- end
+     end
  
-  if (isempty(user_BF_volumes_table) == false)
+      if (isempty(user_BF_volumes_table) == false)
  
-   CSV.write("$(store_final_data_path)/user_BF_volumes_table.csv", user_BF_volumes_table)   
-   CSV.write("$(store_final_data_path)/user_BF_volumes_spread_table.csv", user_BF_volumes_spread_table)
+       CSV.write("$(store_final_data_path)/user_BF_volumes_table.csv", user_BF_volumes_table)   
+       CSV.write("$(store_final_data_path)/user_BF_volumes_spread_table.csv", user_BF_volumes_spread_table)
  
-   if (print_final_data_on_terminal == true)
-     println("These are the values of the BF volumes that you asked for:\n", user_BF_volumes_table, "\n")
-     println("...and these are the values of corresponding spread:\n", user_BF_volumes_spread_table, "\n\n\n")
-   end
+       if (print_final_data_on_terminal == true)
+       println("These are the values of the BF volumes that you asked for:\n", user_BF_volumes_table, "\n")
+       println("...and these are the values of corresponding spread:\n", user_BF_volumes_spread_table, "\n\n\n")
+       end
   
- end
+     end
  
-  if (isempty(user_EPRL_volumes_table) == false)
+      if (isempty(user_EPRL_volumes_table) == false)
  
-   CSV.write("$(store_final_data_path)/user_EPRL_volumes_table.csv", user_EPRL_volumes_table)   
-   CSV.write("$(store_final_data_path)/user_EPRL_volumes_spread_table.csv", user_EPRL_volumes_spread_table)
+       CSV.write("$(store_final_data_path)/user_EPRL_volumes_table.csv", user_EPRL_volumes_table)   
+       CSV.write("$(store_final_data_path)/user_EPRL_volumes_spread_table.csv", user_EPRL_volumes_spread_table)
  
-   if (print_final_data_on_terminal == true)
-     println("These are the values of the EPRL volumes that you asked for:\n", user_EPRL_volumes_table, "\n")
-     println("...and these are the values of corresponding spread:\n", user_EPRL_volumes_spread_table, "\n\n\n")
-   end
+       if (print_final_data_on_terminal == true)
+       println("These are the values of the EPRL volumes that you asked for:\n", user_EPRL_volumes_table, "\n")
+       println("...and these are the values of corresponding spread:\n", user_EPRL_volumes_spread_table, "\n\n\n")
+       end
    
- end 
+     end 
  
- if (size(user_BF_angles_correlations_table)[2] != 1)
+     if (size(user_BF_angles_correlations_table)[2] != 1)
  
-   CSV.write("$(store_final_data_path)/user_BF_angles_correlations_table.csv", user_BF_angles_correlations_table)
+       CSV.write("$(store_final_data_path)/user_BF_angles_correlations_table.csv", user_BF_angles_correlations_table)
  
-   if (print_final_data_on_terminal == true)
-     println("These are the values of the BF correlations that you asked for:\n", user_BF_angles_correlations_table, "\n")
-   end
+       if (print_final_data_on_terminal == true)
+       println("These are the values of the BF correlations that you asked for:\n", user_BF_angles_correlations_table, "\n")
+       end
   
- end
+     end
  
-  if (size(user_EPRL_angles_correlations_table)[2] != 1)
+      if (size(user_EPRL_angles_correlations_table)[2] != 1)
  
-   CSV.write("$(store_final_data_path)/user_EPRL_angles_correlations_table.csv", user_EPRL_angles_correlations_table)
+       CSV.write("$(store_final_data_path)/user_EPRL_angles_correlations_table.csv", user_EPRL_angles_correlations_table)
  
-   if (print_final_data_on_terminal == true)
-     println("These are the values of the EPRL correlations that you asked for:\n", user_EPRL_angles_correlations_table, "\n")
-   end
+       if (print_final_data_on_terminal == true)
+       println("These are the values of the EPRL correlations that you asked for:\n", user_EPRL_angles_correlations_table, "\n")
+       end
  
- end
+     end
  
-  if (isempty(user_BF_volumes_correlations_table) == false)
+      if (isempty(user_BF_volumes_correlations_table) == false)
  
-   CSV.write("$(store_final_data_path)/user_BF_volumes_correlations_table.csv", user_BF_volumes_correlations_table)   
+       CSV.write("$(store_final_data_path)/user_BF_volumes_correlations_table.csv", user_BF_volumes_correlations_table)   
    
-   if (print_final_data_on_terminal == true)
-     println("These are the values of the BF volumes correlations that you asked for:\n", user_BF_volumes_correlations_table, "\n")
-   end
+       if (print_final_data_on_terminal == true)
+       println("These are the values of the BF volumes correlations that you asked for:\n", user_BF_volumes_correlations_table, "\n")
+       end
   
- end  
+     end  
  
-  if (isempty(user_EPRL_volumes_correlations_table) == false)
+      if (isempty(user_EPRL_volumes_correlations_table) == false)
  
-   CSV.write("$(store_final_data_path)/user_EPRL_volumes_correlations_table.csv", user_EPRL_volumes_correlations_table)   
+       CSV.write("$(store_final_data_path)/user_EPRL_volumes_correlations_table.csv", user_EPRL_volumes_correlations_table)   
   
-   if (print_final_data_on_terminal == true)
-     println("These are the values of the EPRL volumes correlations that you asked for:\n", user_EPRL_volumes_correlations_table, "\n")
-   end
+       if (print_final_data_on_terminal == true)
+       println("These are the values of the EPRL volumes correlations that you asked for:\n", user_EPRL_volumes_correlations_table, "\n")
+       end
  
- end   
+     end   
  
- # saving Configurations chosen by user to final_data
- configs_to_compute_file = current_folder*"/configs_to_compute.jl"
- Configurations_computed_in_this_run_file = store_final_data_path*"/Configurations_computed_in_this_run.txt"
- cp(configs_to_compute_file, Configurations_computed_in_this_run_file)
+     # saving Configurations chosen by user to final_data
+     configs_to_compute_file = current_folder*"/configs_to_compute.jl"
+     Configurations_computed_in_this_run_file = store_final_data_path*"/Configurations_computed_in_this_run.txt"
+     cp(configs_to_compute_file, Configurations_computed_in_this_run_file)
 
-printstyled("The execution terminated successfully!\n\n"; color = :bold)
+     printstyled("Chains were assembled successfully! The stored operators for each configuration have been saved in $(data_folder_path)/data_star_model\n\n"; color = :bold)
 
-printstyled("The data have been saved in the 'final_data' folder\n\n"; bold = true, color = :blue) 
+     printstyled("The final assembled data have been saved in 'final_data' folder\n\n"; bold = true, color = :blue) 
  
+else    
+
+     printstyled("Chains have not been assembled. The stored operators for each configuration have been saved in $(data_folder_path)/data_star_model\n\n"; color = :bold) 
+
+end # if on assemble_and_save_final_data 

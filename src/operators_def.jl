@@ -1,4 +1,4 @@
-#"Precompute the angles in the intw basis for all js for the cosine operator."
+#"Precompute the angles cosine operatore in the intw basis for given j"
 function angle_vector(j::Float64, D::Int64, d::Int64)
    
     A = Dict{HalfInteger, Vector{Float64}}()   # Dict{K,V}() constructs a hash table with keys of type K and values of type V
@@ -22,7 +22,7 @@ end
 
 
 
-#"Precompute the matrices Vj and V2j (vol squared) in the intw basis for all js for the volume operator."
+#"Precompute the matrices Vj and V2j (vol squared) in the intw basis for all js for the volume operator"
 function volume_matrix(js, D::Int64, d::Int64)
    
     V = Dict{HalfInteger, Matrix{Float64}}()   # Dict{K,V}() constructs a hash table with keys of type K and values of type V
@@ -34,15 +34,15 @@ function volume_matrix(js, D::Int64, d::Int64)
         V2j = Matrix{Complex{Float64}}(undef, D, D)
 
         # build A matrix
-        ud = zeros(Complex{Float64}, d)  # Array unidimensionale con tutti 0.0 + 0.0im di dimensione d
+        ud = zeros(Complex{Float64}, d)  
         for k in 1:d
             ud[k] =  -1im * (1/4) * (k^2 * (D^2 - k^2) / sqrt(4*(k^2) - 1))
         end
-        ld = .-ud                             # Adesso ld è -ud, cioé ha stessa dimensione e tutti -0.0 - 0.0im
+        ld = .-ud                            
         zd = zeros(Complex{Float64}, D)
-        A = convert(Array, Tridiagonal(ld, zd, ud)) # Adesso questa è la matrice A della foto che mi è stata inviata. Da notare che ud[k] è fatto apposta
+        A = convert(Array, Tridiagonal(ld, zd, ud)) 
 
-      # @show A
+        # @show A
         
         # eigvals and vectors
         decomp = eigen(Hermitian(A))
@@ -54,8 +54,8 @@ function volume_matrix(js, D::Int64, d::Int64)
         qs = decomp.values
         Qs = decomp.vectors # I assume that i-th vector correspo to i-th eigval (done simple check)
         
-       # @show decomp.values
-       # @show decomp.vectors
+        # @show decomp.values
+        # @show decomp.vectors
        
         for k in 1:D
             for kp in 1:D
@@ -80,8 +80,8 @@ function volume_matrix(js, D::Int64, d::Int64)
         V2[j] = copy(Float64.(real(V2j))) # this is equal to Vj squared ...
     end
    
-   V 
-   V2
+    V 
+    V2
     
     return V,V2
    

@@ -3,9 +3,6 @@
 final_data
 
 
-configs_to_compute.jl
-
-
-# private codes #
+# private codes with notebooks for plots #
 ######################
 private_codes

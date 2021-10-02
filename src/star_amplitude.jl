@@ -1,5 +1,6 @@
 
-# Deprecated
+# Deprecated slower versions
+#=
 function star_amplitude_old_1(D::Int64, A::Array{Float64, 5}, indices::Vector{Int64})
     
       amp = 0.0   
@@ -39,11 +40,6 @@ function star_amplitude_old_1(D::Int64, A::Array{Float64, 5}, indices::Vector{In
 end  
 
 
-
-
-
-
-
 # Deprecated
 function star_amplitude_old_2(A::Array{Float64, 5}, indices::Vector{Int64})
 
@@ -53,14 +49,11 @@ function star_amplitude_old_2(A::Array{Float64, 5}, indices::Vector{Int64})
   return amp        
     
 end 
+=#
 
 
 
-
-
-
-
-
+# computes star amplitude for given dimensions, vertex amplitude, containers for contraction and indices
 function star_amplitude(D,A,v1,v2,v3,v4,v5,indices)  
 
   @turbo for i in 1:D    

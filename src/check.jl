@@ -1,3 +1,17 @@
+function check_on_preliminary_parameters(data_folder_path::String, verbosity_random_walk::Int64, verbosity_flux::Int64)
+
+  # data folder check
+  if (isdir(data_folder_path) == false) error("data folder path does not exists") end    
+
+
+  # check on printing but not assembling
+  if (print_final_data_on_terminal == true && assemble_and_save_final_data == false)
+  printstyled("warning: you chose not to combine chains and therefore final data will not be assembled. The request to print the latter on terminal will be ignored\n"; color = :red) 
+  end 
+
+end
+
+
 # check input configuration
 function check_configuration!(user_conf::Vector{Any}, data_folder_path::String, verbosity_random_walk::Int64, verbosity_flux::Int64, chain_id::Int64)
  
@@ -24,9 +38,8 @@ function check_configuration!(user_conf::Vector{Any}, data_folder_path::String, 
   j = convert(Float64, j) 
   end 
   
-  # folder check
-  if (isdir(data_folder_path) == false) error("folder path does not exists") end  
-  if (isfile("vertex_ampls/$(M)/vertex_j=$(j).jld2") == false) error("The vertex amplitude for $(M) model and j=$(j) does not exists in the current directory. Try to run the code from inside the main folder") end
+  # check on presence of vertex amplitude
+  if (isfile("vertex_ampls/$(M)/vertex_j=$(j).jld2") == false) error("The vertex amplitude for $(M) model and j=$(j) does not exists in the current directory. Unless the latter was removed, try to run the code from inside the main folder") end
      
   # (j, M, N, b, σ)  check
   if (typeof(j) != Float64 || j < 0) error("Please assign spin as positive float in user_conf $(user_conf)\n") end
@@ -89,6 +102,8 @@ function check_stored_operators!(user_conf::Vector{Any}, conf::Configuration, da
   push!(user_conf, number_of_existing_angles_pseudo_correlations) # this is user_conf[11]
   
   if (conf.compute_angles_correlations == true && (number_of_existing_angles < number_of_chains) && conf.compute_angles == false) error("for user_conf $(user_conf), you chose to compute angles correlations and not angles, but there are $(number_of_existing_angles) angles previously stored and you are using $(number_of_chains) chains. Since angles correlations require also the computation of angles, you should compute angles as well") end
+  
+  if (conf.compute_angles_correlations == true && (isfile("$(conf.tables_folder)/angles_$(number_of_chains)_chains_combined.csv") == false) && conf.compute_angles == false && assemble_and_save_final_data == true) error("for user_conf $(user_conf), you chose to compute angles correlations and not angles, then assemble the final data. The problem is that there are no previously combined angles with $(number_of_chains) chains, therefore you should compute angles as well and assemble final data for such a number of chains") end  
 
   if (verbosity_flux > 1 && chain_id == 1) println("Found $(number_of_existing_angles) angles previously stored for the $(M) config with j=$(j)") end
   if (verbosity_flux > 1 && chain_id == 1) println("Found $(number_of_existing_angles_pseudo_correlations) operators <A_n,A_m> previously stored for the $(M) config with j=$(j)") end
@@ -108,6 +123,8 @@ function check_stored_operators!(user_conf::Vector{Any}, conf::Configuration, da
   push!(user_conf, number_of_existing_volumes_pseudo_correlations) # this is user_conf[13]       
   
   if (conf.compute_volumes_correlations == true && (number_of_existing_volumes < number_of_chains) && conf.compute_volumes == false) error("for user_conf $(user_conf), you chose to compute volumes correlations and not volumes, but there are $(number_of_existing_volumes) volumes previously stored and you are using $(number_of_chains) chains. Since volumes correlations require also the computation of volumes, you should compute volumes as well") end  
+  
+  if (conf.compute_volumes_correlations == true && (isfile("$(conf.tables_folder)/volumes_$(number_of_chains)_chains_combined.csv") == false) && conf.compute_volumes == false && assemble_and_save_final_data == true) error("for user_conf $(user_conf), you chose to compute volumes correlations and not volumes, then assemble the final data. The problem is that there are no previously combined volumes with $(number_of_chains) chains, therefore you should compute volumes as well and assemble final data for such a number of chains") end    
   
   if (verbosity_flux > 1 && chain_id == 1) println("Found $(number_of_existing_volumes) volumes previously stored for the $(M) config with j=$(j)") end
   if (verbosity_flux > 1 && chain_id == 1) println("Found $(number_of_existing_volumes_pseudo_correlations) operators <V_$(volumes_correlations_node_1),V_$(volumes_correlations_node_2)> previously stored for the $(M) config with j=$(j)") end 
