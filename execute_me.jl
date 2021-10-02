@@ -1,5 +1,4 @@
 current_folder = pwd() 
-if (basename(current_folder) != "star_model") error("The code must be run from inside the 'star_model' folder") end
 
 printstyled("\nM-H algorithm for star model with $(nprocs()) Markov chain(s)\n\n"; bold = true, color = :blue) 
 

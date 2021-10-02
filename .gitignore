@@ -3,6 +3,9 @@
 final_data
 
 
+configs_to_compute.jl
+
+
 # private codes #
 ######################
 private_codes

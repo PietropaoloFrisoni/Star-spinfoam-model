@@ -26,7 +26,7 @@ function check_configuration!(user_conf::Vector{Any}, data_folder_path::String, 
   
   # folder check
   if (isdir(data_folder_path) == false) error("folder path does not exists") end  
-  if (isfile("vertex_ampls/$(M)/vertex_j=$(j).jld2") == false) error("The vertex amplitude for $(M) model and j=$(j) does not exists") end
+  if (isfile("vertex_ampls/$(M)/vertex_j=$(j).jld2") == false) error("The vertex amplitude for $(M) model and j=$(j) does not exists in the current directory. Try to run the code from inside the main folder") end
      
   # (j, M, N, b, σ)  check
   if (typeof(j) != Float64 || j < 0) error("Please assign spin as positive float in user_conf $(user_conf)\n") end
