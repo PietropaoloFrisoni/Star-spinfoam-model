@@ -141,7 +141,7 @@ println("-----------------------------------------------------------------------
         end # check on previously computed angles for this chain and random walk false
         
       if (chain_id == 1)
-      println("Done!\n")
+      println("done!\n")
       end
       
     end # if on angles computation
@@ -183,7 +183,7 @@ println("-----------------------------------------------------------------------
             
           
         if (chain_id == 1)
-        println("Done!\n")
+        println("done!\n")
         end            
   
     end # if on angles pseudo correlations
@@ -231,7 +231,7 @@ println("-----------------------------------------------------------------------
           end # check on previously computed volumes and random walk false
           
         if (chain_id == 1)
-        println("Done!\n")
+        println("done!\n")
         end              
     
     end # if on volumes computation
@@ -278,7 +278,7 @@ println("-----------------------------------------------------------------------
           end # check on previously computed and random walk false      
   
         if (chain_id == 1)
-        println("Done!\n")
+        println("done!\n")
         end      
   
     end # if on volumes correlations        
@@ -383,7 +383,7 @@ if (assemble_and_save_final_data == true)
                 end 
             end  # if on volumes correlation computation      
                  
-        println("Done!\n")  
+        println("done!\n")  
         println("\n-------------------------------------------------------------------------")      
       
   end # end conf cycle

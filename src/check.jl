@@ -101,9 +101,21 @@ function check_stored_operators!(user_conf::Vector{Any}, conf::Configuration, da
   push!(user_conf[7], isfile("$(conf.angles_pseudo_correlations_folder)/angles_pseudo_correlations_chain=$(chain_id).jld2")) # this is user_conf[7][4] 
   push!(user_conf, number_of_existing_angles_pseudo_correlations) # this is user_conf[11]
   
-  if (conf.compute_angles_correlations == true && (number_of_existing_angles < number_of_chains) && conf.compute_angles == false) error("for user_conf $(user_conf), you chose to compute angles correlations and not angles, but there are $(number_of_existing_angles) angles previously stored and you are using $(number_of_chains) chains. Since angles correlations require also the computation of angles, you should compute angles as well") end
+  if (conf.compute_angles_correlations == true && (number_of_existing_angles < number_of_chains) && conf.compute_angles == false) 
+  error("for user_conf $(user_conf), you chose to compute angles correlations and not angles, but there are $(number_of_existing_angles) angles previously stored and you are using $(number_of_chains) chains. Since angles correlations require also the computation of angles, you should compute angles as well") 
+  end
   
-  if (conf.compute_angles_correlations == true && (isfile("$(conf.tables_folder)/angles_$(number_of_chains)_chains_combined.csv") == false) && conf.compute_angles == false && assemble_and_save_final_data == true) error("for user_conf $(user_conf), you chose to compute angles correlations and not angles, then assemble the final data. The problem is that there are no previously combined angles with $(number_of_chains) chains, therefore you should compute angles as well and assemble final data for such a number of chains") end  
+  if (conf.compute_angles_correlations == true && (isfile("$(conf.tables_folder)/angles_$(number_of_chains)_chains_combined.csv") == false) && conf.compute_angles == false && assemble_and_save_final_data == true) 
+  error("for user_conf $(user_conf), you chose to compute angles correlations and not angles, then assemble the final data. The problem is that there are no previously combined angles with $(number_of_chains) chains, therefore you should compute angles as well and assemble final data for such a number of chains") 
+  end  
+  
+  if (conf.random_walk == false && conf.compute_angles == true && number_of_existing_angles < number_of_chains && number_of_existing_angles != 0 && chain_id == 1) 
+  println("warning: for user_conf $(user_conf) you chose to don't do RW and compute angles. Since there are $(number_of_existing_angles) angles previously stored and $(number_of_chains) chains in this run, $(number_of_chains - number_of_existing_angles) angles will be computed") 
+  end
+  
+  if (conf.random_walk == false && conf.compute_angles_correlations == true && number_of_existing_angles_pseudo_correlations < number_of_chains && number_of_existing_angles_pseudo_correlations != 0 && chain_id == 1) 
+  println("warning: for user_conf $(user_conf) you chose to don't do RW and compute angles_pseudo_correlations. Since there are $(number_of_existing_angles_pseudo_correlations) operators <A_n,A_m> previously stored and $(number_of_chains) chains in this run, $(number_of_chains - number_of_existing_angles_pseudo_correlations) operators <A_n,A_m> will be computed") 
+  end
 
   if (verbosity_flux > 1 && chain_id == 1) println("Found $(number_of_existing_angles) angles previously stored for the $(M) config with j=$(j)") end
   if (verbosity_flux > 1 && chain_id == 1) println("Found $(number_of_existing_angles_pseudo_correlations) operators <A_n,A_m> previously stored for the $(M) config with j=$(j)") end
@@ -122,9 +134,21 @@ function check_stored_operators!(user_conf::Vector{Any}, conf::Configuration, da
   push!(user_conf[8], isfile("$(conf.volumes_pseudo_correlations_folder)/volumes_pseudo_correlations_node_1=$(conf.volumes_correlations_node_1)_node_2=$(conf.volumes_correlations_node_2)_chain=$(chain_id).jld2")) # this is user_conf[8][6] 
   push!(user_conf, number_of_existing_volumes_pseudo_correlations) # this is user_conf[13]       
   
-  if (conf.compute_volumes_correlations == true && (number_of_existing_volumes < number_of_chains) && conf.compute_volumes == false) error("for user_conf $(user_conf), you chose to compute volumes correlations and not volumes, but there are $(number_of_existing_volumes) volumes previously stored and you are using $(number_of_chains) chains. Since volumes correlations require also the computation of volumes, you should compute volumes as well") end  
+  if (conf.compute_volumes_correlations == true && (number_of_existing_volumes < number_of_chains) && conf.compute_volumes == false) 
+  error("for user_conf $(user_conf), you chose to compute volumes correlations and not volumes, but there are $(number_of_existing_volumes) volumes previously stored and you are using $(number_of_chains) chains. Since volumes correlations require also the computation of volumes, you should compute volumes as well") 
+  end  
   
-  if (conf.compute_volumes_correlations == true && (isfile("$(conf.tables_folder)/volumes_$(number_of_chains)_chains_combined.csv") == false) && conf.compute_volumes == false && assemble_and_save_final_data == true) error("for user_conf $(user_conf), you chose to compute volumes correlations and not volumes, then assemble the final data. The problem is that there are no previously combined volumes with $(number_of_chains) chains, therefore you should compute volumes as well and assemble final data for such a number of chains") end    
+  if (conf.compute_volumes_correlations == true && (isfile("$(conf.tables_folder)/volumes_$(number_of_chains)_chains_combined.csv") == false) && conf.compute_volumes == false && assemble_and_save_final_data == true) 
+  error("for user_conf $(user_conf), you chose to compute volumes correlations and not volumes, then assemble the final data. The problem is that there are no previously combined volumes with $(number_of_chains) chains, therefore you should compute volumes as well and assemble final data for such a number of chains") 
+  end    
+  
+  if (conf.random_walk == false && conf.compute_volumes == true && number_of_existing_volumes < number_of_chains && number_of_existing_volumes != 0 && chain_id == 1) 
+  println("warning: for user_conf $(user_conf) you chose to don't do RW and compute volumes. Since there are $(number_of_existing_volumes) volumes previously stored and $(number_of_chains) chains in this run, $(number_of_chains - number_of_existing_volumes) volumes will be computed") 
+  end  
+  
+  if (conf.random_walk == false && conf.compute_volumes_correlations == true && number_of_existing_volumes_pseudo_correlations < number_of_chains && number_of_existing_volumes_pseudo_correlations != 0 && chain_id == 1) 
+  println("warning: for user_conf $(user_conf) you chose to don't do RW and compute volumes_pseudo_correlations. Since there are $(number_of_existing_volumes_pseudo_correlations) operators <V_$(volumes_correlations_node_1),V_$(volumes_correlations_node_2)> previously stored and $(number_of_chains) chains in this run, $(number_of_chains - number_of_existing_volumes_pseudo_correlations) operators <V_$(volumes_correlations_node_1),V_$(volumes_correlations_node_2)> will be computed") 
+  end   
   
   if (verbosity_flux > 1 && chain_id == 1) println("Found $(number_of_existing_volumes) volumes previously stored for the $(M) config with j=$(j)") end
   if (verbosity_flux > 1 && chain_id == 1) println("Found $(number_of_existing_volumes_pseudo_correlations) operators <V_$(volumes_correlations_node_1),V_$(volumes_correlations_node_2)> previously stored for the $(M) config with j=$(j)") end 
