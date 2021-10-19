@@ -1,6 +1,6 @@
 function compute_volumes_function!(j, D, vertex, draws, number_of_draws, ampls, volumes, volumes_sq, volumes_matrix_values, N, b, volumes_folder, volumes_sq_folder, chain_id, total_volumes_already_stored=0)
  
-# Here draws are trasposed to allow a faster broadcast 
+# Here draws are trasposed to allow a faster index broadcast 
 
   #containers for contraction
   v1 = zeros(Float64, D)
@@ -18,7 +18,10 @@ function compute_volumes_function!(j, D, vertex, draws, number_of_draws, ampls, 
      
      outer_step_vol = 0.0 
      outer_step_sq_vol = 0.0 
-     indices[:] .= draws[1:20, n]
+
+       for i=1:20
+       @inbounds indices[i] = draws[i, n]
+       end
      
        for i_n = 1:D
        
@@ -50,7 +53,7 @@ end
 
 function compute_volumes_pseudo_correlations_function!(j, D, draws, number_of_draws, ampls, vertex, volumes_pseudo_correlations, volumes_matrix_values, N, b, volumes_pseudo_correlations_folder, chain_id, node_1, node_2, total_volumes_pseudo_correlations_already_stored=0)
 
-# Here draws are trasposed to allow a faster broadcast 
+# Here draws are trasposed to allow a faster index broadcast 
 
   #containers for contraction
   v1 = zeros(Float64, D)
@@ -68,7 +71,10 @@ function compute_volumes_pseudo_correlations_function!(j, D, draws, number_of_dr
 
     for n = 1:number_of_draws
 
-    @inbounds indices[:] .= draws[1:20, n]
+        for i=1:20
+        @inbounds indices[i] = draws[i, n]
+        end
+    
     outer_step_vol_1 = 0.0
 
         for i_n = 1:D 
