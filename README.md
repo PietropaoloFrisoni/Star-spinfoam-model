@@ -34,7 +34,7 @@ A full list of the packages used in this code can be found in the file "/inc/pkg
 ## Usage:
 
 ```
-[j, model to compute, number of iterations, number of burnin iterations, sigma of gaussian, *[random walk flags]*, *[angle operators flags]*, *[volume operators flags]*]
+[j, model to compute, number of iterations, number of burnin iterations, sigma of gaussian, *[random walk flags]*, *[angle operators flags]*, *[volume operators flags]*, *[entropy operator flags]*]
 
 ```
 
