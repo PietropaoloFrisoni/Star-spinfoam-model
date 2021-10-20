@@ -1,8 +1,8 @@
 current_folder = pwd() 
 
-printstyled("\nM-H algorithm for star model with $(nprocs()) Markov chain(s)\n\n"; bold = true, color = :blue) 
-
 using Distributed
+
+printstyled("\nM-H algorithm for star model with $(nprocs()) Markov chain(s)\n\n"; bold = true, color = :blue) 
 
 if (nprocs() > length(Sys.cpu_info())) printstyled("WARNING: you are using more chains than available cores on this system. Performances will be affected\n"; bold = true, color = :red) end
 sleep(2)
@@ -25,6 +25,7 @@ include("src/check.jl")
 include("src/operators_def.jl")
 include("src/angles.jl")
 include("src/volumes.jl")
+include("src/entropy.jl")
 end
 println("done\n") 
 
@@ -70,7 +71,7 @@ println("-----------------------------------------------------------------------
 
   for user_conf in Configurations
   
-    conf = init_config(user_conf, data_folder_path, user_conf[6][3], user_conf[9], user_conf[7][3], user_conf[7][4], user_conf[10], user_conf[11], user_conf[8][5], user_conf[8][6], user_conf[12], user_conf[13]) 
+    conf = init_config(user_conf, data_folder_path, user_conf[6][3], user_conf[6][4], user_conf[7][3], user_conf[7][4], user_conf[7][5], user_conf[7][6], user_conf[8][5], user_conf[8][6], user_conf[8][7], user_conf[8][8], user_conf[9][3], user_conf[9][4]) 
     
     if (chain_id == 1) 
     printstyled("Starting with configuration:\nM=$(conf.M), j=$(conf.j), N=$(conf.N), b=$(conf.b), σ=$(conf.σ)\n\n"; bold = true, color = :bold) 
@@ -89,7 +90,7 @@ println("-----------------------------------------------------------------------
     
         if (conf.add_chains == true)
             if (chain_id == 1) 
-            println("There are $(conf.total_draws_already_stored) chains already stored for this configuration, and $(number_of_chains) will be added\n") 
+            println("There are $(conf.total_draws_already_stored) draws already stored for this configuration, and $(number_of_chains) will be added\n") 
             @time random_walk_function(conf.j, conf.D, conf.d, vertex, conf.N, conf.b, conf.σ, conf.draws_folder, conf.ampls_folder, chain_id, verbosity_random_walk, conf.total_draws_already_stored)  
             else
             random_walk_function(conf.j, conf.D, conf.d, vertex, conf.N, conf.b, conf.σ, conf.draws_folder, conf.ampls_folder, chain_id, verbosity_random_walk, conf.total_draws_already_stored)
@@ -125,7 +126,7 @@ println("-----------------------------------------------------------------------
         
           if (conf.add_chains == true)
               if (chain_id == 1) 
-              println("There are $(conf.total_angles_already_stored) angles chains already stored for this configuration, and $(number_of_chains) will be added\n") 
+              println("There are $(conf.total_angles_already_stored) angles already stored for this configuration, and $(number_of_chains) will be added\n") 
               @time compute_angles_function!(conf.j_half_int, conf.D, draws, number_of_draws, angles, angles_sq, angles_vector_values, conf.N, conf.b, conf.angles_folder, conf.angles_sq_folder, chain_id, conf.total_angles_already_stored)
               else
               compute_angles_function!(conf.j_half_int, conf.D, draws, number_of_draws, angles, angles_sq, angles_vector_values, conf.N, conf.b, conf.angles_folder, conf.angles_sq_folder, chain_id, conf.total_angles_already_stored)
@@ -166,7 +167,7 @@ println("-----------------------------------------------------------------------
             
             if (conf.add_chains == true)
                 if (chain_id == 1) 
-                println("There are $(conf.total_angles_pseudo_correlations_already_stored) operators <A_n,A_m> chains already stored for this configuration, and $(number_of_chains) will be added\n") 
+                println("There are $(conf.total_angles_pseudo_correlations_already_stored) operators <A_n,A_m> already stored for this configuration, and $(number_of_chains) will be added\n") 
                 @time compute_angles_pseudo_correlations_function!(conf.j_half_int, conf.d, draws, number_of_draws, angles_pseudo_correlations, angles_vector_values, conf.N, conf.b, conf.angles_pseudo_correlations_folder, chain_id, conf.total_angles_pseudo_correlations_already_stored)
                 else
                 compute_angles_pseudo_correlations_function!(conf.j_half_int, conf.d, draws, number_of_draws, angles_pseudo_correlations, angles_vector_values, conf.N, conf.b, conf.angles_pseudo_correlations_folder, chain_id, conf.total_angles_pseudo_correlations_already_stored)
@@ -206,7 +207,7 @@ println("-----------------------------------------------------------------------
          
             @load "$(conf.draws_folder)/draws_chain=$(chain_id).jld2" draws 
        
-            #This is such that draws has structure: [21,N], so the volumes will be computed faster  
+            # this is such that draws has structure: [21,N] 
             draws = transpose(draws)  
             number_of_draws = size(draws)[2]           
         
@@ -215,7 +216,7 @@ println("-----------------------------------------------------------------------
         
             if (conf.add_chains == true)       
                 if (chain_id == 1) 
-                println("There are $(conf.total_volumes_already_stored) volumes chains already stored for this configuration, and $(number_of_chains) will be added\n") 
+                println("There are $(conf.total_volumes_already_stored) volumes already stored for this configuration, and $(number_of_chains) will be added\n") 
                 @time compute_volumes_function!(conf.j_half_int, conf.D, vertex, draws, number_of_draws, ampls, volumes, volumes_sq, volumes_matrix_values, conf.N, conf.b, conf.volumes_folder, conf.volumes_sq_folder, chain_id, conf.total_volumes_already_stored)  
                 else
                 compute_volumes_function!(conf.j_half_int, conf.D, vertex, draws, number_of_draws, ampls, volumes, volumes_sq, volumes_matrix_values, conf.N, conf.b, conf.volumes_folder, conf.volumes_sq_folder, chain_id, conf.total_volumes_already_stored) 
@@ -249,11 +250,11 @@ println("-----------------------------------------------------------------------
           else    
   
             volumes_pseudo_correlations = Array{Float64}(undef, 1)  
-            volumes_matrix_values = volume_matrix(conf.j_half_int, conf.D, conf.d)  # I'm using F. old functions   
+            volumes_matrix_values = volume_matrix(conf.j_half_int, conf.D, conf.d)     
     
             @load "$(conf.draws_folder)/draws_chain=$(chain_id).jld2" draws 
        
-            #This is such that draws has structure: [21,N], so the volumes correlations will be computed faster  
+            # this is such that draws has structure: [21,N] 
             draws = transpose(draws)  
             number_of_draws = size(draws)[2]           
         
@@ -262,7 +263,7 @@ println("-----------------------------------------------------------------------
   
             if (conf.add_chains == true)
                 if (chain_id == 1) 
-                println("There are $(conf.total_volumes_pseudo_correlations_already_stored) operators <V_$(conf.volumes_correlations_node_1),V_$(conf.volumes_correlations_node_2)> chains already stored for this configuration, and $(number_of_chains) will be added\n")
+                println("There are $(conf.total_volumes_pseudo_correlations_already_stored) operators <V_$(conf.volumes_correlations_node_1),V_$(conf.volumes_correlations_node_2)> already stored for this configuration, and $(number_of_chains) will be added\n")
                 @time compute_volumes_pseudo_correlations_function!(conf.j_half_int, conf.D, draws, number_of_draws, ampls, vertex, volumes_pseudo_correlations, volumes_matrix_values, conf.N, conf.b, conf.volumes_pseudo_correlations_folder, chain_id, conf.volumes_correlations_node_1, conf.volumes_correlations_node_2, conf.total_volumes_pseudo_correlations_already_stored)
                 else
                 compute_volumes_pseudo_correlations_function!(conf.j_half_int, conf.D, draws, number_of_draws, ampls, vertex, volumes_pseudo_correlations, volumes_matrix_values, conf.N, conf.b, conf.volumes_pseudo_correlations_folder, chain_id, conf.volumes_correlations_node_1, conf.volumes_correlations_node_2, conf.total_volumes_pseudo_correlations_already_stored)
@@ -281,7 +282,54 @@ println("-----------------------------------------------------------------------
         println("done!\n")
         end      
   
-    end # if on volumes correlations        
+    end # if on volumes correlations 
+    
+    
+    if (conf.compute_entropy == true) 
+    
+        if (chain_id == 1)
+        printstyled("\nStarting computing density matrix of subsystem $(conf.subsystem)\n...\n"; color = :light_blue) 
+        end    
+        
+          if (conf.random_walk == false && conf.density_matrix_already_stored_for_this_chain == true)      
+          # skip density matrix computation for this chain        
+          else            
+          
+            number_of_nodes_in_subsystem = size(conf.subsystem)[1]
+            density_matrix_linear_dim = conf.D^number_of_nodes_in_subsystem
+            
+            density_matrix = zeros(Float64, density_matrix_linear_dim, density_matrix_linear_dim)
+            
+            @load "$(conf.draws_folder)/draws_chain=$(chain_id).jld2" draws 
+       
+            # this is such that draws has structure: [21,N]  
+            draws = transpose(draws)  
+            number_of_draws = size(draws)[2]           
+        
+            @load "vertex_ampls/$(conf.M)/vertex_j=$(conf.j).jld2" vertex
+            
+            if (conf.add_chains == true)
+                if (chain_id == 1) 
+                println("There are $(conf.total_density_matrices_already_stored) density matrices for subsystem $(conf.subsystem) already stored for this configuration, and $(number_of_chains) will be added\n")
+                @time compute_density_matrix_function!(conf.j, conf.D, vertex, draws, number_of_draws, density_matrix, conf.N, conf.b, conf.density_matrices_folder, chain_id, conf.subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim, conf.total_density_matrices_already_stored)                                
+                else
+                compute_density_matrix_function!(conf.j, conf.D, vertex, draws, number_of_draws, density_matrix, conf.N, conf.b, conf.density_matrices_folder, chain_id, conf.subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim, conf.total_density_matrices_already_stored)           
+                end   
+            else
+                if (chain_id == 1) 
+                @time compute_density_matrix_function!(conf.j, conf.D, vertex, draws, number_of_draws, density_matrix, conf.N, conf.b, conf.density_matrices_folder, chain_id, conf.subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim) 
+                else
+                compute_density_matrix_function!(conf.j, conf.D, vertex, draws, number_of_draws, density_matrix, conf.N, conf.b, conf.density_matrices_folder, chain_id, conf.subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim) 
+                end              
+            end  # check on add chains 
+    
+          end # check on previously computed and random walk false      
+  
+        if (chain_id == 1)
+        println("done!\n")
+        end      
+    
+    end # if on entropy computation      
     
   if (chain_id == 1)
   println("\n-------------------------------------------------------------------------\n") 
@@ -310,6 +358,9 @@ if (assemble_and_save_final_data == true)
   
       user_BF_volumes_correlations_table = DataFrame()
       user_EPRL_volumes_correlations_table = DataFrame() 
+      
+      user_BF_entropy_table = DataFrame()
+      user_EPRL_entropy_table = DataFrame()       
         
       array = String[];
       for i=1:20, j=1:20 
@@ -327,7 +378,7 @@ if (assemble_and_save_final_data == true)
         printstyled("\nStart assembling $(number_of_chains) chain(s) for:\nM=$(conf.M), j=$(conf.j), N=$(conf.N), b=$(conf.b), σ=$(conf.σ)\n"; color = :bold) 
     
           if (conf.add_chains == true)
-          println("\nEven if you chose to add chains, only $(number_of_chains) chains are assembled for every operator. This will change in future updates!\n")        
+          println("\nEven if you chose to add chains, only $(number_of_chains) chains are assembled for every operator\n")        
           end        
   
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
@@ -382,6 +433,19 @@ if (assemble_and_save_final_data == true)
             global user_EPRL_volumes_correlations_table = hcat(user_EPRL_volumes_correlations_table, volumes_correlations_dataframe)          
                 end 
             end  # if on volumes correlation computation      
+
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------                   
+                 
+            if (conf.compute_entropy == true) 
+            density_matrix_linear_dim = conf.D^(size(conf.subsystem)[1])
+            entropy_dataframe = entropy_assemble(conf, number_of_chains, density_matrix_linear_dim)      
+                if (conf.M == "BF")
+            global user_BF_entropy_table = hcat(user_BF_entropy_table, entropy_dataframe) 
+                else
+            global user_EPRL_entropy_table = hcat(user_EPRL_entropy_table, entropy_dataframe)         
+                end 
+            end # if on entropy computation                 
+                 
                  
         println("done!\n")  
         println("\n-------------------------------------------------------------------------")      
@@ -483,6 +547,28 @@ if (assemble_and_save_final_data == true)
        end
  
      end   
+     
+     
+      if (isempty(user_BF_entropy_table) == false)
+ 
+       CSV.write("$(store_final_data_path)/user_BF_entropy_table.csv", user_BF_entropy_table)   
+   
+       if (print_final_data_on_terminal == true)
+       println("These are the values of the BF entropy for the subsystem that you asked for:\n", user_BF_entropy_table, "\n")
+       end
+  
+     end  
+ 
+      if (isempty(user_EPRL_entropy_table) == false)
+ 
+       CSV.write("$(store_final_data_path)/user_EPRL_entropy_table.csv", user_EPRL_entropy_table)   
+   
+       if (print_final_data_on_terminal == true)
+       println("These are the values of the EPRL entropy for the subsystem that you asked for:\n", user_EPRL_entropy_table, "\n")
+       end
+  
+     end       
+     
  
      # saving Configurations chosen by user to final_data
      configs_to_compute_file = current_folder*"/configs_to_compute.jl"

@@ -11,3 +11,8 @@ local_configs_to_compute.jl
 # private codes with notebooks for plots #
 ######################
 private_codes
+
+
+# data of computations #
+######################
+data_star_model

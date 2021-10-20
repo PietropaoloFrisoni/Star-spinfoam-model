@@ -32,6 +32,9 @@ function check_configuration!(user_conf::Vector{Any}, data_folder_path::String, 
   volumes_correlations_node_1 = user_conf[8][3]
   volumes_correlations_node_2 = user_conf[8][4]
   
+  compute_density_matrix = user_conf[9][1]
+  nodes_in_subsystem = user_conf[9][2]
+  
   # set spin to float ending in .0 if it is integer
   if (typeof(j) == Int64) 
   user_conf[1] = convert(Float64, user_conf[1]) 
@@ -62,6 +65,14 @@ function check_configuration!(user_conf::Vector{Any}, data_folder_path::String, 
   if (volumes_correlations_node_1 < 1 || volumes_correlations_node_1 > 20) error("In user_conf $(user_conf), node 1 for the volumes correlations must be between 1 and 20") end
   if (volumes_correlations_node_2 < 1 || volumes_correlations_node_2 > 20) error("In user_conf $(user_conf), node 2 for the volumes correlations must be between 1 and 20") end
     
+  # entropy flags check   
+  if (typeof(compute_density_matrix) != Bool) error("compute_density_matrix must have a bool value in user_conf $(user_conf)") end  
+  if (isempty(nodes_in_subsystem) && compute_density_matrix == true) error("In user_conf $(user_conf) you chose to compute the density matrix but you didn't specified the nodes in subsystem") end
+  if (size(nodes_in_subsystem)[1] > 20) error("In user_conf $(user_conf) there are more than 20 nodes for the subsystem") end
+  for node in nodes_in_subsystem
+  if (typeof(node) != Int || node < 1 || node > 20) error("In user_conf $(user_conf) the node $(node) is not a valid option for the computation of the density matrix. Use an integer between 1 and 20") end
+  end
+    
 end # end of function check_configuration!
 
 
@@ -83,7 +94,8 @@ function check_stored_operators!(user_conf::Vector{Any}, conf::Configuration, da
   number_of_existing_draws = file_count(conf.draws_folder)
   number_of_existing_ampls = file_count(conf.ampls_folder) 
   if (number_of_existing_draws != number_of_existing_ampls) error("There are different numbers of stored draws and ampls of user_conf $(user_conf)") end  
-  push!(user_conf, number_of_existing_draws) # this is user_conf[9]           
+  user_conf[6] = convert(Array{Any}, user_conf[6])
+  push!(user_conf[6], number_of_existing_draws) # this is user_conf[6][4]           
   
   if (verbosity_flux > 1 && chain_id == 1) println("Found $(number_of_existing_draws) draws previously stored for the $(M) config with j=$(j)") end
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -95,11 +107,12 @@ function check_stored_operators!(user_conf::Vector{Any}, conf::Configuration, da
   number_of_existing_angles = file_count(conf.angles_folder)
   number_of_existing_angles_sq = file_count(conf.angles_sq_folder)
   number_of_existing_angles_pseudo_correlations = file_count(conf.angles_pseudo_correlations_folder)
-  if (number_of_existing_angles != number_of_existing_angles_sq) error("There are different numbers of stored angles and angles sq of user_conf $(user_conf)") end                                 
-  push!(user_conf, number_of_existing_angles) # this is user_conf[10] 
+  if (number_of_existing_angles != number_of_existing_angles_sq) error("There are different numbers of stored angles and angles sq of user_conf $(user_conf)") end       
+  user_conf[7] = convert(Array{Any}, user_conf[7])                          
+  push!(user_conf[7], number_of_existing_angles) # this is user_conf[7][4]
   
-  push!(user_conf[7], isfile("$(conf.angles_pseudo_correlations_folder)/angles_pseudo_correlations_chain=$(chain_id).jld2")) # this is user_conf[7][4] 
-  push!(user_conf, number_of_existing_angles_pseudo_correlations) # this is user_conf[11]
+  push!(user_conf[7], isfile("$(conf.angles_pseudo_correlations_folder)/angles_pseudo_correlations_chain=$(chain_id).jld2")) # this is user_conf[7][5] 
+  push!(user_conf[7], number_of_existing_angles_pseudo_correlations) # this is user_conf[7][6]
   
   if (conf.compute_angles_correlations == true && (number_of_existing_angles < number_of_chains) && conf.compute_angles == false) 
   error("for user_conf $(user_conf), you chose to compute angles correlations and not angles, but there are $(number_of_existing_angles) angles previously stored and you are using $(number_of_chains) chains. Since angles correlations require also the computation of angles, you should compute angles as well") 
@@ -129,10 +142,10 @@ function check_stored_operators!(user_conf::Vector{Any}, conf::Configuration, da
   number_of_existing_volumes_sq = file_count(conf.volumes_sq_folder) 
   number_of_existing_volumes_pseudo_correlations = file_count(conf.volumes_pseudo_correlations_folder)
   if (number_of_existing_volumes != number_of_existing_volumes_sq) error("There are different numbers of stored volumes and volumes sq of user_conf $(user_conf)") end   
-  push!(user_conf, number_of_existing_volumes) # this is user_conf[12]  
+  push!(user_conf[8], number_of_existing_volumes) # this is user_conf[8][6]  
   
-  push!(user_conf[8], isfile("$(conf.volumes_pseudo_correlations_folder)/volumes_pseudo_correlations_node_1=$(conf.volumes_correlations_node_1)_node_2=$(conf.volumes_correlations_node_2)_chain=$(chain_id).jld2")) # this is user_conf[8][6] 
-  push!(user_conf, number_of_existing_volumes_pseudo_correlations) # this is user_conf[13]       
+  push!(user_conf[8], isfile("$(conf.volumes_pseudo_correlations_folder)/volumes_pseudo_correlations_node_1=$(conf.volumes_correlations_node_1)_node_2=$(conf.volumes_correlations_node_2)_chain=$(chain_id).jld2")) # this is user_conf[8][7] 
+  push!(user_conf[8], number_of_existing_volumes_pseudo_correlations) # this is user_conf[8][8]       
   
   if (conf.compute_volumes_correlations == true && (number_of_existing_volumes < number_of_chains) && conf.compute_volumes == false) 
   error("for user_conf $(user_conf), you chose to compute volumes correlations and not volumes, but there are $(number_of_existing_volumes) volumes previously stored and you are using $(number_of_chains) chains. Since volumes correlations require also the computation of volumes, you should compute volumes as well") 
@@ -153,6 +166,21 @@ function check_stored_operators!(user_conf::Vector{Any}, conf::Configuration, da
   if (verbosity_flux > 1 && chain_id == 1) println("Found $(number_of_existing_volumes) volumes previously stored for the $(M) config with j=$(j)") end
   if (verbosity_flux > 1 && chain_id == 1) println("Found $(number_of_existing_volumes_pseudo_correlations) operators <V_$(volumes_correlations_node_1),V_$(volumes_correlations_node_2)> previously stored for the $(M) config with j=$(j)") end 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------------    
+  
+  # ENTROPY CHECK
+  
+  push!(user_conf[9], isfile("$(conf.density_matrices_folder)/density_matrix_chain=$(chain_id).jld2")) # this is user_conf[9][3]   
+
+  number_of_existing_density_matrices = file_count(conf.density_matrices_folder)
+  push!(user_conf[9], number_of_existing_density_matrices) # this is user_conf[9][4]
+  
+  if (conf.random_walk == false && conf.compute_entropy == true && number_of_existing_density_matrices < number_of_chains && number_of_existing_density_matrices != 0 && chain_id == 1) 
+  println("warning: for user_conf $(user_conf) you chose to don't do RW and compute entropy. Since there are $(number_of_existing_density_matrices) density matrices previously stored and $(number_of_chains) chains in this run, $(number_of_chains - number_of_existing_density_matrices) density matrices will be computed") 
+  end    
+  
+  if (verbosity_flux > 1 && chain_id == 1) println("Found $(number_of_existing_density_matrices) density matrices of subsystem $(conf.subsystem) previously stored for the $(M) config with j=$(j)") end
+
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------  
   
   # if user doesn't want to do RW
   

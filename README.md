@@ -39,6 +39,7 @@ A full list of the packages used in this code can be found in the file "/inc/pkg
 ```
 
 
+
 ## Meaning of parameters:
 
 
@@ -60,14 +61,14 @@ A full list of the packages used in this code can be found in the file "/inc/pkg
 - "add_chains"  --->  If this parameter is true, then *all new computed draws and operators will be stored in addition to those previously found in "data_folder_path", and nothing is overwritten*
       
                                                        
-*[angle operators flags]* = [compute_angles, compute_angles_correlations]
+*[angle operator flags]* = [compute_angles, compute_angles_correlations]
 
 - "compute_angles"              --->  If "true" computes the angles for such configuration
 
 - "compute_angles_correlations" --->  If "true" computes all the angles correlations C(angle_i,angle_j) for such configuration
 
 
-*[volume operators flags]* = [compute_volumes, compute_volumes_correlations, node_1, node_2]
+*[volume operator flags]* = [compute_volumes, compute_volumes_correlations, node_1, node_2]
 
 - "computes_volumes"             ---> If "true" computes the volumes for such configuration. With respect to angles, the code computes only the volumes in the node 1
                                       
@@ -76,6 +77,14 @@ A full list of the packages used in this code can be found in the file "/inc/pkg
 - "node_1"                       ---> It must be an integer between 1 and 20. It refers to the first node for the computation of volumes correlations
 
 - "node_2"                       ---> It must be an integer between 1 and 20. It refers to the second node for the computation of volumes correlations
+
+
+*[entropy operator flags]* = [compute_entropy, [nodes_in_subsystem]]
+
+- "compute_entropy"              ---> If "true" computes the entropy of the specified subsystem for such configuration
+                                      
+- "[nodes_in_subsystem]"         ---> It must be a vector of integers between 1 and 20, with maximum length equal to 20. It specifies the nodes in the subsystem
+                                      
 
 
 ## Example of usage:
@@ -90,7 +99,7 @@ See "configs_to_compute".
 
 - The contraction of vertex amplitudes on the GPU is not currently implemented. This would probably improve significantly the performance for large spins
 
-- The algorithm is written in such a way as to perform the random walk and compute the observables in the same run, using the same number of resources. The two phases could be separated, in such a way as to parallelize the computation of observables over an arbitrary number of tasks (which already happens) by also exploiting an arbitrary number of CPUs for each task, that is, for each Markov chain. This would make the computation of observables considerably faster.
+- The algorithm is written in such a way as to perform the random walk and compute the observables in the same run, using the same number of resources. The two phases could be totally separated, in such a way as to parallelize the computation of observables over an arbitrary number of tasks (which already happens) by also exploiting an arbitrary number of CPUs for each task, that is, for each Markov chain. This would make the computation of observables considerably faster
 
 
 

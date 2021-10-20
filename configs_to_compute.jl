@@ -14,11 +14,13 @@ assemble_and_save_final_data = true
 print_final_data_on_terminal = true
 
 # usage example
-Configurations = [[0.5, "BF", 10^6, 10^3, 0.40, [true, false], [true, true], [true, true, 1, 2]],
-                  [1.0, "BF", 10^6, 10^3, 0.39, [true, false], [true, true], [true, true, 1, 2]],
-                  [1.5, "BF", 10^6, 10^3, 0.37, [true, false], [true, true], [true, true, 1, 2]],
-                  [0.5, "EPRL", 10^6, 10^3, 0.40, [true, false], [true, true], [true, true, 1, 2]],
-                  [1.0, "EPRL", 10^6, 10^3, 0.39, [true, false], [true, true], [true, true, 1, 2]],
-                  [1.5, "EPRL", 10^6, 10^3, 0.37, [true, false], [true, true], [true, true, 1, 2]],  
+Configurations = [[0.5, "BF", 10^6, 10^3, 0.40, [true, true], [true, true], [true, true, 1, 2], [true, [1,5]]],
+                  [1.0, "BF", 10^6, 10^3, 0.40, [true, true], [true, true], [true, true, 1, 2], [true, [1,5]]],
+                  [1.5, "BF", 10^6, 10^3, 0.40, [true, true], [true, true], [true, true, 1, 2], [true, [1,5]]],
+                  [2.0, "BF", 10^6, 10^3, 0.40, [true, false], [true, true], [true, true, 1, 2], [true, [1,5]]],
+                  [0.5, "EPRL", 10^6, 10^3, 0.40, [true, false], [true, true], [true, true, 1, 2], [true, [1,5]]],
+                  [1.0, "EPRL", 10^6, 10^3, 0.40, [true, false], [true, true], [true, true, 1, 2], [true, [1,5]]],
+                  [1.5, "EPRL", 10^6, 10^3, 0.40, [true, false], [true, true], [true, true, 1, 2], [true, [1,5]]],
+                  [2.0, "EPRL", 10^6, 10^3, 0.40, [true, false], [true, true], [true, true, 1, 2], [true, [1,5]]],
                  ]  
-
+         
