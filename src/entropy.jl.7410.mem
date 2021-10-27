@@ -1,0 +1,121 @@
+        - function compute_density_matrix_function!(j, D, vertex, draws, number_of_draws, ampls, density_matrix, N, b, density_matrices_folder, chain_id, subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim, total_density_matrices_already_stored=0)
+        - 
+        -   # containers for contraction
+      448   v1 = zeros(Float64, D)
+      448   v2 = zeros(Float64, D)
+      448   v3 = zeros(Float64, D)
+      448   v4 = zeros(Float64, D)
+      448   v5 = zeros(Float64, D)
+        -  
+      960   indices = zeros(Int64,20) 
+        -   #amplitudes_vector = zeros(Float64, density_matrix_linear_dim)
+      384   vector_unflatted_indices = zeros(Int, number_of_nodes_in_subsystem)
+        -   
+      384   comparison_vector = zeros(Int, number_of_nodes_in_subsystem)
+        -  
+        0   for flat_index_row = 1:density_matrix_linear_dim
+        -   
+        0       for n = 1:number_of_draws 
+        -       
+        0           from_flat_index_to_vector_indices!(D, vector_unflatted_indices, number_of_nodes_in_subsystem, flat_index_row)
+        -       
+        0           for k=1:number_of_nodes_in_subsystem
+        0           @inbounds comparison_vector[k] = draws[subsystem[k], n]
+        -           end
+        -           
+        -           # process only the draws that have intws in the subsystem
+        -           # that corresponds to the flat_index 
+        -           
+316362816           if maximum(abs.(vector_unflatted_indices - comparison_vector)) > 0
+        -           continue
+        -           end
+        -           
+        -           # draw is good, go on
+        -           
+        -           #row_amplitude = ampls[n] 
+        -           
+        0               for i=1:20
+        0               @inbounds indices[i] = draws[i, n]
+        -               end
+        -    
+        -  
+        0               for flat_index_column = flat_index_row:density_matrix_linear_dim
+        - 
+        0                   from_flat_index_to_vector_indices!(D, vector_unflatted_indices, number_of_nodes_in_subsystem, flat_index_column)
+        - 
+        0                   for k=1:number_of_nodes_in_subsystem
+        0                   @inbounds indices[subsystem[k]] = vector_unflatted_indices[k] 
+        -                   end
+        -               
+        0                   @inbounds density_matrix[flat_index_row, flat_index_column] += star_amplitude(D, vertex, v1, v2, v3, v4, v5, indices)/ampls[n]
+        -               
+        -               end
+        -                
+        -       end
+        -       
+        -   end
+        -  
+        0   density_matrix = density_matrix + transpose(density_matrix) - Diagonal(density_matrix)
+        -   
+      128   density_matrix /= sum(Diagonal(density_matrix))
+        -   
+        0   println(density_matrix)
+        -       
+     2112   @save "$(density_matrices_folder)/density_matrix_chain=$(chain_id + total_density_matrices_already_stored).jld2" density_matrix 
+        - 
+        - end
+        - 
+        - 
+        - 
+        - 
+        - 
+        - function entropy_assemble(conf::Configuration, chains_to_assemble::Int64, density_matrix_linear_dim)
+        - 
+      768   density_matrix_all_chains = zeros(Float64, density_matrix_linear_dim, density_matrix_linear_dim, chains_to_assemble) 
+        - 
+        0   for id_chain=1:chains_to_assemble
+        -     
+        0     @load "$(conf.density_matrices_folder)/density_matrix_chain=$(chain_id).jld2" density_matrix 
+        -       
+       96     density_matrix_all_chains[:, :, id_chain] = density_matrix[:, :]
+        - 
+        -   end # cycle in id_chain
+        -       
+        0   density_matrix_all_chains = sum(density_matrix_all_chains, dims = 3)
+     1088   density_matrix_all_chains[:] ./= chains_to_assemble
+        -   
+        -   # trick to make disappear the third fictitious dimension (N×N×1 Array{Float64, 3} ---> N×N Matrix{Float64})
+        0   density_matrix_all_chains = density_matrix_all_chains[:,:]
+        -   
+        0   for i=1:density_matrix_linear_dim, j=1:density_matrix_linear_dim  
+        0   @inbounds density_matrix_all_chains[j,i] = round(density_matrix_all_chains[j,i], digits = 5)
+        -   end      
+        -       
+      768   decomp = eigen(Symmetric(density_matrix_all_chains))
+        -     
+        -   density_matrix_eigenvalues = decomp.values
+        -     
+        -   entropy = 0.0
+        -   
+        0   for i=1:density_matrix_linear_dim
+        0   entropy -= density_matrix_eigenvalues[i]*log(density_matrix_eigenvalues[i])
+        -   end 
+        - 
+        0   entropy_dataframe = DataFrame(to_rename = entropy)
+     2496   column_name = "j=$(conf.j)"
+        0   rename!(entropy_dataframe, :to_rename => column_name) # julia is weird 
+        -  
+     1152   entropy_table_name = "/entropy_$(chains_to_assemble)_chains_combined.csv"
+        -       
+      576   entropy_table_full_path = conf.tables_folder*entropy_table_name
+        - 
+        0   CSV.write(entropy_table_full_path, entropy_dataframe)
+        -   
+        0   return entropy_dataframe
+        -   
+        - end
+        - 
+        - 
+        - 
+        - 
+        - 

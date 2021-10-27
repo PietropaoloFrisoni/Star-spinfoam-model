@@ -283,7 +283,8 @@ println("-----------------------------------------------------------------------
         end      
   
     end # if on volumes correlations 
-    
+
+#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------     
     
     if (conf.compute_entropy == true) 
     
@@ -306,20 +307,21 @@ println("-----------------------------------------------------------------------
             draws = transpose(draws)  
             number_of_draws = size(draws)[2]           
         
+            @load "$(conf.ampls_folder)/ampls_chain=$(chain_id).jld2" ampls 
             @load "vertex_ampls/$(conf.M)/vertex_j=$(conf.j).jld2" vertex
             
             if (conf.add_chains == true)
                 if (chain_id == 1) 
                 println("There are $(conf.total_density_matrices_already_stored) density matrices for subsystem $(conf.subsystem) already stored for this configuration, and $(number_of_chains) will be added\n")
-                @time compute_density_matrix_function!(conf.j, conf.D, vertex, draws, number_of_draws, density_matrix, conf.N, conf.b, conf.density_matrices_folder, chain_id, conf.subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim, conf.total_density_matrices_already_stored)                                
+                @time compute_density_matrix_function!(conf.j, conf.D, vertex, draws, number_of_draws, ampls, density_matrix, conf.N, conf.b, conf.density_matrices_folder, chain_id, conf.subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim, conf.total_density_matrices_already_stored)                                
                 else
-                compute_density_matrix_function!(conf.j, conf.D, vertex, draws, number_of_draws, density_matrix, conf.N, conf.b, conf.density_matrices_folder, chain_id, conf.subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim, conf.total_density_matrices_already_stored)           
+                compute_density_matrix_function!(conf.j, conf.D, vertex, draws, number_of_draws, ampls, density_matrix, conf.N, conf.b, conf.density_matrices_folder, chain_id, conf.subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim, conf.total_density_matrices_already_stored)           
                 end   
             else
                 if (chain_id == 1) 
-                @time compute_density_matrix_function!(conf.j, conf.D, vertex, draws, number_of_draws, density_matrix, conf.N, conf.b, conf.density_matrices_folder, chain_id, conf.subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim) 
+                @time compute_density_matrix_function!(conf.j, conf.D, vertex, draws, number_of_draws, ampls, density_matrix, conf.N, conf.b, conf.density_matrices_folder, chain_id, conf.subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim) 
                 else
-                compute_density_matrix_function!(conf.j, conf.D, vertex, draws, number_of_draws, density_matrix, conf.N, conf.b, conf.density_matrices_folder, chain_id, conf.subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim) 
+                compute_density_matrix_function!(conf.j, conf.D, vertex, draws, number_of_draws, ampls, density_matrix, conf.N, conf.b, conf.density_matrices_folder, chain_id, conf.subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim) 
                 end              
             end  # check on add chains 
     

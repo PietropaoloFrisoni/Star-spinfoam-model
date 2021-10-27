@@ -1,0 +1,192 @@
+        - function random_walk_function(j::Float64, D::Int64, d::Int64, A::Array{Float64, 5}, N::Int64, b::Int64, σ::Float64, draws_folder::String, ampls_folder::String, chain_id::Int64, verbosity::Int64, number_of_existing_draws::Int64=0)
+        - 
+        -   # containers for contraction (some allocations)
+      448   v1 = zeros(Float64, D)
+      448   v2 = zeros(Float64, D)
+      448   v3 = zeros(Float64, D)
+      448   v4 = zeros(Float64, D)
+      448   v5 = zeros(Float64, D)
+        -     
+      128   draws = ElasticArray{Int64}(undef, 21, 0)     # some allocations    
+        0   ampls = ElasticArray{Float64}(undef, 0)      
+        -   
+      448   Truncated_Coefficients = zeros(Float64, D)    # some allocations   
+        0   Normal_distribution = Normal(0, σ)
+        -  
+        0   for i = 0:d
+        -   r = 0.0
+        0     for n = (-i):1:(d-i)            
+        0     r += (cdf(Normal_distribution,n+0.5)-cdf(Normal_distribution,n-0.5))  
+        -     end 
+        0   Truncated_Coefficients[i+1] = r 
+        -   end     
+        -     
+        0   if (myid() == 1) 
+        0   if(verbosity > 1)  
+        0   println("Truncated coefficients for j=$(j) are $(Truncated_Coefficients)\n")         
+        -   end 
+        -   end  
+        - 
+        -   #Initial draw and gaussian 
+     1024   draw = Array{Int64}(undef, 21)           # some allocations --- # 1 final slot for molteplicity
+      960   gaussian_draw = Array{Int64}(undef, 20)  # some allocations 
+        -     
+        -   amp = 0.0    
+        0   while(amp == 0) 
+        0     for i = 1:20
+    16128     @inbounds draw[i] = rand((1:D))     # some allocations        
+        -     end 
+        0   amp = star_amplitude(D, A, v1, v2, v3, v4, v5, draw)  
+        -   end
+        -     
+        0   draw[21] = 1 # Initial molteplicity      
+        -   
+        0   if (myid() == 1) 
+        0   if(verbosity > 1)  
+        0   println("Initial draw is $(draw[1:20]) with amp $(amp)\n")       
+        -   end 
+        -   end      
+        -       
+        -   #Proposed draw  
+      960   prop_draw = Array{Int64}(undef, 20)      # some allocations
+        -  
+        -   acceptance_ratio = 0      
+        -   molteplicity = 1                              # initial molteplicity counter
+      384   draw_float_sample = Array{Float64}(undef,1)   # some allocations --- Distribution pkg does not allow it to be scalar without allocating memory     
+        -     
+        -   RW_monitor = true  # to test if the RW actually moved
+        -     
+        0   for n=1:1:N 
+        -        
+        -       RW_monitor = true  
+        -         
+        -       # Sampling proposed draw   
+        -       Cx=Cx_prop=1.0 
+        0       for i=1:1:20 
+        0            while true
+        0            rand!(Normal_distribution, draw_float_sample)    
+        0            @inbounds gaussian_draw[i] = round(Int64, draw_float_sample[1])   
+        0            @inbounds prop_draw[i] = draw[i] + gaussian_draw[i] 
+        0            @inbounds !(1 <= prop_draw[i] && prop_draw[i] <= (D)) || break
+        -            end
+        0         if (gaussian_draw[i] != 0) RW_monitor = false; end    
+        0            @inbounds Cx*=Truncated_Coefficients[draw[i]]    
+        0            @inbounds Cx_prop*=Truncated_Coefficients[prop_draw[i]]  
+        -       end 
+        -         
+        0       if (RW_monitor == true) 
+        -       
+        0           if (myid() == 1) 
+        0           if(verbosity > 1)  
+        0           println("Iteration $(n)---------------------------------------------------------------\n")          
+        0           println("The prop_draw below:\n$(prop_draw[1:20])\nturns out to be equal to the current draw:\n$(draw[1:20])\nso that the molteplicity of the current draw is raised to $(molteplicity + 1)\n")
+        -           end 
+        -           end    
+        -             
+        0         acceptance_ratio += 1   
+        0         molteplicity += 1
+        -         continue    
+        -             
+        -       else      
+        -         
+        0           if (myid() == 1) 
+        0           if(verbosity > 1)  
+        0           println("Iteration $(n)---------------------------------------------------------------\n")        
+        0           println("draw is:\n$(draw[1:20])\nprop_draw is:\n$(prop_draw[1:20])\namp is $(amp)\n")      
+        -           end 
+        -           end    
+        -         
+        - 
+        0         Prop_amp = star_amplitude(D, A, v1, v2, v3, v4, v5, prop_draw) 
+        -         
+        0         p=min(1.0,(((Prop_amp^2)/(amp^2)))*(Cx/Cx_prop))       
+        -       
+        0         if (isnan(p))
+        0         error("got NaN while computing densities ratio: prop_draw = $(prop_draw), amp = $(amp)")           
+        -         end        
+        -     
+        0         r = rand()    
+        -           
+        0         if(r<p)
+        -         
+        0                 if (myid() == 1) 
+        0                 if(verbosity > 1)  
+        0                 println("prop_draw $(prop_draw) was accepted, since p=$(p) and r=$(r)\n")
+        -                 end 
+        -                 end   
+        - 
+        0                     if(n>b)
+225708096                     resize!(draws, 21, size(draws)[2]+1)     # some allocations
+ 14682880                     resize!(ampls, size(ampls)[1]+1)         # some allocations
+        0                     draw[21] = molteplicity
+        0                     draws[:, end] = draw[:]
+        0                     ampls[end] = amp
+        - 
+        0                         if (myid() == 1) 
+        0                         if(verbosity > 1)  
+        0                         println("The old draw $(draw[1:20]) has been stored with molteplicity $(draw[21])\nthe corresponding amplitude $(amp) has been stored as well")  
+        -                         end 
+        -                         end 
+        -                                 
+        -                     end
+        -                     
+        -                 molteplicity = 1
+        -                 
+        0              @turbo for i = 1:20
+        -                     draw[i] = prop_draw[i]
+        -                     end
+        -                     
+        -                 amp = Prop_amp
+        0                 acceptance_ratio += 1
+        -                 
+        0                 if (myid() == 1) 
+        0                 if(verbosity > 1) 
+        0                 println("Now the new draw is $(draw[1:20])\nthe new amp is $(amp)\n")
+        -                 end 
+        -                 end 
+        -         else      
+        0                 molteplicity += 1    
+        0                 if (myid() == 1) 
+        0                 if(verbosity > 1)  
+        0                 println("prop_draw $(prop_draw) was rejected, since p=$(p) and r=$(r)\nThe current draw $(draw[1:20]) remains the same and its molteplicity is $(molteplicity)\namp remains $(amp)\n")
+        -                 end 
+        -                 end
+        -         end # if condition  (r<p)
+        -             
+        -         end # if condition  RW_monitor == true  
+        -         
+        -       # final storage  
+        0       if (n == N)  
+        0       resize!(draws, 21, size(draws)[2]+1)     # some allocations 
+        0       resize!(ampls, size(ampls)[1]+1)         # some allocations 
+        0       draw[21] = molteplicity
+        0       draws[:, end] .= draw[:]
+        0       ampls[end] = amp      
+        0         if (myid() == 1) 
+        0         if(verbosity > 1) 
+        0         println("The last draw $(draw[1:20]) has been stored with molteplicity $(draw[21])\n")  
+        -         end 
+        -         end                     
+        -       end  
+        -         
+        -   end # n cycle      
+        -    
+        -   #This is such that draws has structure: [N,21], so the operators will be computed faster  
+        0   draws = transpose(draws)  # some allocations  
+        -    
+        0   if (chain_id == 1)  
+     3040   println("Done! $(acceptance_ratio*100/N)% of proposed draws have been accepted in master process")  
+        -   end               
+        -         
+        0   draws_number = size(draws)[1] 
+        -   
+        0   if (chain_id == 1) 
+        0   if(verbosity > 0) 
+     1504   println("$(draws_number) draws stored in master process") 
+        -   end 
+        -   end        
+        -     
+     1920   @save "$(draws_folder)/draws_chain=$(chain_id+number_of_existing_draws).jld2" draws    # some allocations 
+     1920   @save "$(ampls_folder)/ampls_chain=$(chain_id+number_of_existing_draws).jld2" ampls    # some allocations 
+        -  
+        - end

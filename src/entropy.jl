@@ -1,4 +1,4 @@
-function compute_density_matrix_function!(j, D, vertex, draws, number_of_draws, density_matrix, N, b, density_matrices_folder, chain_id, subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim, total_density_matrices_already_stored=0)
+function compute_density_matrix_function!(j, D, vertex, draws, number_of_draws, ampls, density_matrix, N, b, density_matrices_folder, chain_id, subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim, total_density_matrices_already_stored=0)
 
   # containers for contraction
   v1 = zeros(Float64, D)
@@ -8,44 +8,51 @@ function compute_density_matrix_function!(j, D, vertex, draws, number_of_draws, 
   v5 = zeros(Float64, D)
  
   indices = zeros(Int64,20) 
-  amplitudes_vector = zeros(Float64, density_matrix_linear_dim)
   vector_unflatted_indices = zeros(Int, number_of_nodes_in_subsystem)
+  comparison_vector = zeros(Int, number_of_nodes_in_subsystem)
  
-  for n = 1:number_of_draws  
- 
-      for flat_index = 1:density_matrix_linear_dim
-
-          from_flat_index_to_vector_indices!(D, vector_unflatted_indices, number_of_nodes_in_subsystem, flat_index)
+  for flat_index_row = 1:density_matrix_linear_dim
+  
+      for n = 1:number_of_draws 
       
+          from_flat_index_to_vector_indices!(D, vector_unflatted_indices, number_of_nodes_in_subsystem, flat_index_row)
+          
+          for k=1:number_of_nodes_in_subsystem
+          @inbounds comparison_vector[k] = abs(vector_unflatted_indices[k] - draws[subsystem[k], n])
+          end
+          
+          if maximum(comparison_vector) > 0
+          continue
+          end
+          
           for i=1:20
           @inbounds indices[i] = draws[i, n]
           end
-    
-          for k=1:number_of_nodes_in_subsystem
-          @inbounds indices[subsystem[k]] = vector_unflatted_indices[k] 
-          end
-           
-          @inbounds amplitudes_vector[flat_index] = star_amplitude(D, vertex, v1, v2, v3, v4, v5, indices)  
-       
-      end  
-      
-      
-      for column = 1:density_matrix_linear_dim, row = column:density_matrix_linear_dim 
-      
-          @inbounds density_matrix[row, column] += amplitudes_vector[column]*amplitudes_vector[row]*draws[21, n]
-      
-      end
 
-  end
-  
-  for i = 1:density_matrix_linear_dim, j = (i+1):density_matrix_linear_dim 
-  @inbounds density_matrix[i, j] = density_matrix[j, i] 
-  end 
-  
-  density_matrix /= sum(Diagonal(density_matrix))
+              for flat_index_column = flat_index_row:density_matrix_linear_dim
+
+                  from_flat_index_to_vector_indices!(D, vector_unflatted_indices, number_of_nodes_in_subsystem, flat_index_column)
+
+                  for k=1:number_of_nodes_in_subsystem
+                  @inbounds indices[subsystem[k]] = vector_unflatted_indices[k] 
+                  end
+              
+                    if (flat_index_column == flat_index_row) 
+                    @inbounds density_matrix[flat_index_row, flat_index_column] += 1 
+                    continue
+                    end   
+              
+                  @inbounds density_matrix[flat_index_row, flat_index_column] += star_amplitude(D, vertex, v1, v2, v3, v4, v5, indices)/ampls[n]
+              
+              end
+               
+      end # draw cycle
       
+  end # flat_index_row cycle
+ 
+  density_matrix = (density_matrix + transpose(density_matrix) - Diagonal(density_matrix))/sum(Diagonal(density_matrix))
+  
   @save "$(density_matrices_folder)/density_matrix_chain=$(chain_id + total_density_matrices_already_stored).jld2" density_matrix 
-
 
 end
 
