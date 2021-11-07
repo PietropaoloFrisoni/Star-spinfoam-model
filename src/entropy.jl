@@ -38,11 +38,11 @@ function compute_density_matrix_function!(j, D, vertex, draws, number_of_draws, 
                   end
               
                     if (flat_index_column == flat_index_row) 
-                    @inbounds density_matrix[flat_index_row, flat_index_column] += 1 
+                    @inbounds density_matrix[flat_index_row, flat_index_column] += 1*draws[21,n] 
                     continue
                     end   
               
-                  @inbounds density_matrix[flat_index_row, flat_index_column] += star_amplitude(D, vertex, v1, v2, v3, v4, v5, indices)/ampls[n]
+                  @inbounds density_matrix[flat_index_row, flat_index_column] += star_amplitude(D, vertex, v1, v2, v3, v4, v5, indices)*draws[21,n]/ampls[n]
               
               end
                
@@ -55,6 +55,76 @@ function compute_density_matrix_function!(j, D, vertex, draws, number_of_draws, 
   @save "$(density_matrices_folder)/density_matrix_chain=$(chain_id + total_density_matrices_already_stored).jld2" density_matrix 
 
 end
+
+
+
+
+
+
+
+function compute_density_matrix_function_multithread!(j, D, vertex, draws, number_of_draws, ampls, density_matrix, N, b, density_matrices_folder, chain_id, subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim, total_density_matrices_already_stored=0)
+
+  number_of_threads = Threads.nthreads()
+
+  # containers for contraction
+  v1 = [zeros(Float64, D) for i in 1:number_of_threads]
+  v2 = [zeros(Float64, D) for i in 1:number_of_threads]
+  v3 = [zeros(Float64, D) for i in 1:number_of_threads]
+  v4 = [zeros(Float64, D) for i in 1:number_of_threads]
+  v5 = [zeros(Float64, D) for i in 1:number_of_threads]
+ 
+  indices = [zeros(Int64, 20)  for i in 1:number_of_threads] 
+  vector_unflatted_indices = [zeros(Int64, number_of_nodes_in_subsystem)  for i in 1:number_of_threads] 
+  comparison_vector = [zeros(Int64, number_of_nodes_in_subsystem)  for i in 1:number_of_threads] 
+
+  Threads.@threads for flat_index_row = 1:density_matrix_linear_dim
+
+  thread_id = Threads.threadid()
+   
+      for n = 1:number_of_draws 
+      
+          from_flat_index_to_vector_indices!(D, vector_unflatted_indices[thread_id], number_of_nodes_in_subsystem, flat_index_row)
+          
+          for k=1:number_of_nodes_in_subsystem
+          @inbounds comparison_vector[thread_id][k] = abs(vector_unflatted_indices[thread_id][k] - draws[subsystem[k], n])
+          end
+          
+          if maximum(comparison_vector[thread_id]) > 0
+          continue
+          end
+          
+          for i=1:20
+          @inbounds indices[thread_id][i] = draws[i, n]
+          end
+
+              for flat_index_column = flat_index_row:density_matrix_linear_dim
+
+                  from_flat_index_to_vector_indices!(D, vector_unflatted_indices[thread_id], number_of_nodes_in_subsystem, flat_index_column)
+
+                  for k=1:number_of_nodes_in_subsystem
+                  @inbounds indices[thread_id][subsystem[k]] = vector_unflatted_indices[thread_id][k] 
+                  end
+              
+                    if (flat_index_column == flat_index_row) 
+                    @inbounds density_matrix[flat_index_row, flat_index_column] += 1*draws[21,n] 
+                    continue
+                    end   
+              
+                  @inbounds density_matrix[flat_index_row, flat_index_column] += star_amplitude(D, vertex, v1[thread_id], v2[thread_id], v3[thread_id], v4[thread_id], v5[thread_id], indices[thread_id])*draws[21,n]/ampls[n]
+              
+              end
+               
+      end # draw cycle
+      
+  end # flat_index_row cycle
+ 
+  density_matrix = (density_matrix + transpose(density_matrix) - Diagonal(density_matrix))/sum(Diagonal(density_matrix))
+  
+  @save "$(density_matrices_folder)/density_matrix_chain=$(chain_id + total_density_matrices_already_stored).jld2" density_matrix 
+
+end
+
+
 
 
 
@@ -89,8 +159,11 @@ function entropy_assemble(conf::Configuration, chains_to_assemble::Int64, densit
   entropy = 0.0
   
   for i=1:density_matrix_linear_dim
-  entropy -= density_matrix_eigenvalues[i]*log(density_matrix_eigenvalues[i])
+  entropy -= density_matrix_eigenvalues[i]*log(Complex(density_matrix_eigenvalues[i]))
   end 
+  
+  # discard small imaginary values due to numerical errors
+  entropy = real(entropy)
 
   entropy_dataframe = DataFrame(to_rename = entropy)
   column_name = "j=$(conf.j)"
