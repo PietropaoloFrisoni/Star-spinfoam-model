@@ -13,3 +13,14 @@ using ElasticArrays
 using CSV
 using DataFrames
 using Dates
+
+
+# useful command to install all required pkgs in a single loop
+
+#=
+vec = ["Distributions", "Random", "HalfIntegers", "ParallelDataTransfer",  "Tullio", "LoopVectorization", "BenchmarkTools", "JLD2", "LinearAlgebra", "KahanSummation", "DelimitedFiles", "ElasticArrays", "CSV", "DataFrames", "Dates"]
+
+for p in vec
+import Pkg; Pkg.add("$p")
+end
+=#
