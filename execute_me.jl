@@ -363,7 +363,8 @@ if (assemble_and_save_final_data == true)
       
       user_BF_entropy_table = DataFrame()
       user_EPRL_entropy_table = DataFrame()       
-        
+       
+      # creating first column of angles correlations dataframe  
       array = String[];
       for i=1:20, j=1:20 
       string = "C($(i),$(j))"
@@ -371,7 +372,22 @@ if (assemble_and_save_final_data == true)
       end
       user_BF_angles_correlations_table = DataFrame(nodes = array)
       user_EPRL_angles_correlations_table = DataFrame(nodes = array)
- 
+      
+      # creating first column of angles numerical fluctuations dataframe 
+      array = String[];
+      push!(array, "avg. angles (first node)")        
+      push!(array, "std. angles (first node)") 
+      push!(array, "n. chains combined") 
+      user_BF_angles_numerical_fluctuations_table = DataFrame(numerical_data = array)
+      user_EPRL_angles_numerical_fluctuations_table = DataFrame(numerical_data = array)
+  
+      # creating first column of volumes numerical fluctuations dataframe 
+      array = String[];
+      push!(array, "avg. volumes")        
+      push!(array, "std. volumes") 
+      push!(array, "n. chains combined") 
+      user_BF_volumes_numerical_fluctuations_table = DataFrame(numerical_data = array)
+      user_EPRL_volumes_numerical_fluctuations_table = DataFrame(numerical_data = array) 
   
       for user_conf in Configurations
   
@@ -392,9 +408,11 @@ if (assemble_and_save_final_data == true)
                 if (conf.M == "BF")
             global user_BF_angles_table = hcat(user_BF_angles_table, angles_dataframes[1]) 
             global user_BF_angles_spread_table = hcat(user_BF_angles_spread_table, angles_dataframes[2]) 
+            global user_BF_angles_numerical_fluctuations_table = hcat(user_BF_angles_numerical_fluctuations_table, angles_dataframes[3])
                 else
             global user_EPRL_angles_table = hcat(user_EPRL_angles_table, angles_dataframes[1]) 
             global user_EPRL_angles_spread_table = hcat(user_EPRL_angles_spread_table, angles_dataframes[2])          
+            global user_EPRL_angles_numerical_fluctuations_table = hcat(user_EPRL_angles_numerical_fluctuations_table, angles_dataframes[3])
                 end 
             end # if on angle computation
     
@@ -417,10 +435,12 @@ if (assemble_and_save_final_data == true)
             volumes_dataframes = volumes_assemble(conf, number_of_chains)      
                 if (conf.M == "BF")
             global user_BF_volumes_table = hcat(user_BF_volumes_table, volumes_dataframes[1]) 
-            global user_BF_volumes_spread_table = hcat(user_BF_volumes_spread_table, volumes_dataframes[2])     
+            global user_BF_volumes_spread_table = hcat(user_BF_volumes_spread_table, volumes_dataframes[2])    
+            global user_BF_volumes_numerical_fluctuations_table = hcat(user_BF_volumes_numerical_fluctuations_table, volumes_dataframes[3]) 
                 else 
             global user_EPRL_volumes_table = hcat(user_EPRL_volumes_table, volumes_dataframes[1]) 
             global user_EPRL_volumes_spread_table = hcat(user_EPRL_volumes_spread_table, volumes_dataframes[2])     
+            global user_EPRL_volumes_numerical_fluctuations_table = hcat(user_EPRL_volumes_numerical_fluctuations_table, volumes_dataframes[3]) 
                 end 
             end # if on angle computation      
       
@@ -464,55 +484,63 @@ if (assemble_and_save_final_data == true)
 
       if (isempty(user_BF_angles_table) == false)
  
-       CSV.write("$(store_final_data_path)/user_BF_angles_table.csv", user_BF_angles_table)   
-       CSV.write("$(store_final_data_path)/user_BF_angles_spread_table.csv", user_BF_angles_spread_table)
+       CSV.write("$(store_final_data_path)/BF_angles_table.csv", user_BF_angles_table)   
+       CSV.write("$(store_final_data_path)/BF_angles_spread_table.csv", user_BF_angles_spread_table)
+       CSV.write("$(store_final_data_path)/BF_angles_numerical_fluctuations_table.csv", user_BF_angles_numerical_fluctuations_table)
  
        if (print_final_data_on_terminal == true)
        println("These are the values of the BF angles that you asked for:\n", user_BF_angles_table, "\n")
-       println("...and these are the values of corresponding spread:\n", user_BF_angles_spread_table, "\n\n\n")
+       println("These are the data specifying numerical fluctuations of BF angles:\n", user_BF_angles_numerical_fluctuations_table, "\n")
+       println("These are the values of the BF angles quantum spread:\n", user_BF_angles_spread_table, "\n\n\n")
        end
    
       end
  
       if (isempty(user_EPRL_angles_table) == false)
      
-       CSV.write("$(store_final_data_path)/user_EPRL_angles_table.csv", user_EPRL_angles_table)   
-       CSV.write("$(store_final_data_path)/user_EPRL_angles_spread_table.csv", user_EPRL_angles_spread_table)
+       CSV.write("$(store_final_data_path)/EPRL_angles_table.csv", user_EPRL_angles_table)   
+       CSV.write("$(store_final_data_path)/EPRL_angles_spread_table.csv", user_EPRL_angles_spread_table)
+       CSV.write("$(store_final_data_path)/EPRL_angles_numerical_fluctuations_table.csv", user_EPRL_angles_numerical_fluctuations_table)
  
        if (print_final_data_on_terminal == true)
        println("These are the values of the EPRL angles that you asked for:\n", user_EPRL_angles_table, "\n")
-       println("...and these are the values of corresponding spread:\n", user_EPRL_angles_spread_table, "\n\n\n")
+       println("These are the data specifying numerical fluctuations of EPRL angles:\n", user_EPRL_angles_numerical_fluctuations_table, "\n")
+       println("These are the values of the EPRL angles quantum spread:\n", user_EPRL_angles_spread_table, "\n\n\n")
        end
    
      end
  
       if (isempty(user_BF_volumes_table) == false)
  
-       CSV.write("$(store_final_data_path)/user_BF_volumes_table.csv", user_BF_volumes_table)   
-       CSV.write("$(store_final_data_path)/user_BF_volumes_spread_table.csv", user_BF_volumes_spread_table)
+       CSV.write("$(store_final_data_path)/BF_volumes_table.csv", user_BF_volumes_table)   
+       CSV.write("$(store_final_data_path)/BF_volumes_spread_table.csv", user_BF_volumes_spread_table)
+       CSV.write("$(store_final_data_path)/BF_volumes_numerical_fluctuations_table.csv", user_BF_volumes_numerical_fluctuations_table)
  
        if (print_final_data_on_terminal == true)
        println("These are the values of the BF volumes that you asked for:\n", user_BF_volumes_table, "\n")
-       println("...and these are the values of corresponding spread:\n", user_BF_volumes_spread_table, "\n\n\n")
+       println("These are the data specifying numerical fluctuations of BF volumes:\n", user_BF_volumes_numerical_fluctuations_table, "\n")
+       println("These are the values of the BF volumes quantum spread:\n", user_BF_volumes_spread_table, "\n\n\n")
        end
   
      end
  
       if (isempty(user_EPRL_volumes_table) == false)
  
-       CSV.write("$(store_final_data_path)/user_EPRL_volumes_table.csv", user_EPRL_volumes_table)   
-       CSV.write("$(store_final_data_path)/user_EPRL_volumes_spread_table.csv", user_EPRL_volumes_spread_table)
+       CSV.write("$(store_final_data_path)/EPRL_volumes_table.csv", user_EPRL_volumes_table)   
+       CSV.write("$(store_final_data_path)/EPRL_volumes_spread_table.csv", user_EPRL_volumes_spread_table)
+       CSV.write("$(store_final_data_path)/EPRL_volumes_numerical_fluctuations_table.csv", user_EPRL_volumes_numerical_fluctuations_table)
  
        if (print_final_data_on_terminal == true)
        println("These are the values of the EPRL volumes that you asked for:\n", user_EPRL_volumes_table, "\n")
-       println("...and these are the values of corresponding spread:\n", user_EPRL_volumes_spread_table, "\n\n\n")
+       println("These are the data specifying numerical fluctuations of EPRL volumes:\n", user_EPRL_volumes_numerical_fluctuations_table, "\n")
+       println("These are the values of the EPRL volumes quantum spread:\n", user_EPRL_volumes_spread_table, "\n\n\n")
        end
    
      end 
  
      if (size(user_BF_angles_correlations_table)[2] != 1)
  
-       CSV.write("$(store_final_data_path)/user_BF_angles_correlations_table.csv", user_BF_angles_correlations_table)
+       CSV.write("$(store_final_data_path)/BF_angles_correlations_table.csv", user_BF_angles_correlations_table)
  
        if (print_final_data_on_terminal == true)
        println("These are the values of the BF correlations that you asked for:\n", user_BF_angles_correlations_table, "\n")
@@ -522,7 +550,7 @@ if (assemble_and_save_final_data == true)
  
       if (size(user_EPRL_angles_correlations_table)[2] != 1)
  
-       CSV.write("$(store_final_data_path)/user_EPRL_angles_correlations_table.csv", user_EPRL_angles_correlations_table)
+       CSV.write("$(store_final_data_path)/EPRL_angles_correlations_table.csv", user_EPRL_angles_correlations_table)
  
        if (print_final_data_on_terminal == true)
        println("These are the values of the EPRL correlations that you asked for:\n", user_EPRL_angles_correlations_table, "\n")
@@ -532,7 +560,7 @@ if (assemble_and_save_final_data == true)
  
       if (isempty(user_BF_volumes_correlations_table) == false)
  
-       CSV.write("$(store_final_data_path)/user_BF_volumes_correlations_table.csv", user_BF_volumes_correlations_table)   
+       CSV.write("$(store_final_data_path)/BF_volumes_correlations_table.csv", user_BF_volumes_correlations_table)   
    
        if (print_final_data_on_terminal == true)
        println("These are the values of the BF volumes correlations that you asked for:\n", user_BF_volumes_correlations_table, "\n")
@@ -542,7 +570,7 @@ if (assemble_and_save_final_data == true)
  
       if (isempty(user_EPRL_volumes_correlations_table) == false)
  
-       CSV.write("$(store_final_data_path)/user_EPRL_volumes_correlations_table.csv", user_EPRL_volumes_correlations_table)   
+       CSV.write("$(store_final_data_path)/EPRL_volumes_correlations_table.csv", user_EPRL_volumes_correlations_table)   
   
        if (print_final_data_on_terminal == true)
        println("These are the values of the EPRL volumes correlations that you asked for:\n", user_EPRL_volumes_correlations_table, "\n")
@@ -553,7 +581,7 @@ if (assemble_and_save_final_data == true)
      
       if (isempty(user_BF_entropy_table) == false)
  
-       CSV.write("$(store_final_data_path)/user_BF_entropy_table.csv", user_BF_entropy_table)   
+       CSV.write("$(store_final_data_path)/BF_entropy_table.csv", user_BF_entropy_table)   
    
        if (print_final_data_on_terminal == true)
        println("These are the values of the BF entropy for the subsystem that you asked for:\n", user_BF_entropy_table, "\n")
@@ -563,7 +591,7 @@ if (assemble_and_save_final_data == true)
  
       if (isempty(user_EPRL_entropy_table) == false)
  
-       CSV.write("$(store_final_data_path)/user_EPRL_entropy_table.csv", user_EPRL_entropy_table)   
+       CSV.write("$(store_final_data_path)/EPRL_entropy_table.csv", user_EPRL_entropy_table)   
    
        if (print_final_data_on_terminal == true)
        println("These are the values of the EPRL entropy for the subsystem that you asked for:\n", user_EPRL_entropy_table, "\n")

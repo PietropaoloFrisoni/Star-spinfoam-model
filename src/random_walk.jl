@@ -175,14 +175,14 @@ function random_walk_function(j::Float64, D::Int64, d::Int64, A::Array{Float64, 
   draws = transpose(draws)  # some allocations  
    
   if (chain_id == 1)  
-  println("Done! $(acceptance_ratio*100/N)% of proposed draws have been accepted in master process")  
+  println("Done! $(acceptance_ratio*100/N)% of proposed draws have been accepted in master chain")  
   end               
         
   draws_number = size(draws)[1] 
   
   if (chain_id == 1) 
   if(verbosity > 0) 
-  println("$(draws_number) draws stored in master process") 
+  println("$(draws_number) draws stored in master chain") 
   end 
   end        
     

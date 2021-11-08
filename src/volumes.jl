@@ -116,6 +116,7 @@ function volumes_assemble(conf::Configuration, chains_to_assemble::Int64)
 
   volumes_all_chains = zeros(Float64, 1, chains_to_assemble) 
   volumes_sq_all_chains = zeros(Float64, 1, chains_to_assemble)    
+  volumes_numerical_fluctuations = zeros(Float64, 3)
   
   volumes_spread = zeros(Float64, 1)  
     
@@ -128,6 +129,15 @@ function volumes_assemble(conf::Configuration, chains_to_assemble::Int64)
     volumes_sq_all_chains[:, id_chain] = volumes_sq[:]
       
   end # cycle in id_chain
+  
+  # average_volume
+  volumes_numerical_fluctuations[1] = mean(volumes_all_chains[1,:])  
+  
+  # std_dev_volume
+  volumes_numerical_fluctuations[2] = std(volumes_all_chains[1,:])    
+  
+  # number of combined chains
+  volumes_numerical_fluctuations[3] = chains_to_assemble   
       
   volumes_all_chains = sum(volumes_all_chains, dims = 2)
   volumes_sq_all_chains = sum(volumes_sq_all_chains, dims = 2)
@@ -143,18 +153,23 @@ function volumes_assemble(conf::Configuration, chains_to_assemble::Int64)
   
   volumes_dataframe = DataFrame(to_rename = volumes_all_chains)
   volumes_sq_dataframe = DataFrame(to_rename = volumes_sq_all_chains)
+  volumes_numerical_fluctuations_dataframe = DataFrame(to_rename = volumes_numerical_fluctuations)
   column_name = "j=$(conf.j)"
   rename!(volumes_dataframe, :to_rename => column_name) # julia is weird
   rename!(volumes_sq_dataframe, :to_rename => column_name)   
+  rename!(volumes_numerical_fluctuations_dataframe, :to_rename => column_name)
  
   volumes_table_name = "/volumes_$(chains_to_assemble)_chains_combined.csv"
   volumes_sq_table_name = "/volumes_sq_$(chains_to_assemble)_chains_combined.csv"
+  volumes_numerical_fluctuations_table_name = "/volumes_numerical_fluctuations_$(chains_to_assemble)_chains_combined.csv"
       
   volumes_table_full_path = conf.tables_folder*volumes_table_name
   volumes_sq_table_full_path = conf.tables_folder*volumes_sq_table_name
+  volumes_numerical_fluctuations_full_path = conf.tables_folder*volumes_numerical_fluctuations_table_name
       
   CSV.write(volumes_table_full_path, volumes_dataframe)
   CSV.write(volumes_sq_table_full_path, volumes_sq_dataframe)
+  CSV.write(volumes_numerical_fluctuations_full_path, volumes_numerical_fluctuations_dataframe)
   
   # spread is here
   # I compute spread by combining squared and volumes which were previously combined between multiple chains 
@@ -171,7 +186,7 @@ function volumes_assemble(conf::Configuration, chains_to_assemble::Int64)
   
   CSV.write(volumes_spread_table_full_path, volumes_spread_dataframe)
   
-  return volumes_dataframe,volumes_spread_dataframe
+  return volumes_dataframe, volumes_spread_dataframe, volumes_numerical_fluctuations_dataframe
 
 end
 

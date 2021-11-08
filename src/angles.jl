@@ -55,7 +55,8 @@ end
 function angles_assemble(conf::Configuration, chains_to_assemble::Int64)
 
   angles_all_chains = zeros(Float64, 20, chains_to_assemble) 
-  angles_sq_all_chains = zeros(Float64, 20, chains_to_assemble)    
+  angles_sq_all_chains = zeros(Float64, 20, chains_to_assemble)  
+  angles_numerical_fluctuations = zeros(Float64, 3)   
   
   angles_spread = zeros(Float64, 20)  
     
@@ -68,6 +69,15 @@ function angles_assemble(conf::Configuration, chains_to_assemble::Int64)
     angles_sq_all_chains[:, id_chain] = angles_sq[:]
       
   end # cycle in id_chain
+      
+  # average_angle_first_node 
+  angles_numerical_fluctuations[1] = mean(angles_all_chains[1,:])  
+  
+  # std_dev_angle_first_node 
+  angles_numerical_fluctuations[2] = std(angles_all_chains[1,:])    
+  
+  # number of combined chains
+  angles_numerical_fluctuations[3] = chains_to_assemble 
       
   angles_all_chains = sum(angles_all_chains, dims = 2)
   angles_sq_all_chains = sum(angles_sq_all_chains, dims = 2)
@@ -84,18 +94,23 @@ function angles_assemble(conf::Configuration, chains_to_assemble::Int64)
   
   angles_dataframe = DataFrame(to_rename = angles_all_chains)
   angles_sq_dataframe = DataFrame(to_rename = angles_sq_all_chains)
+  angles_numerical_fluctuations_dataframe = DataFrame(to_rename = angles_numerical_fluctuations)
   column_name = "j=$(conf.j)"
   rename!(angles_dataframe, :to_rename => column_name) # julia is weird
-  rename!(angles_sq_dataframe, :to_rename => column_name)   
+  rename!(angles_sq_dataframe, :to_rename => column_name) 
+  rename!(angles_numerical_fluctuations_dataframe, :to_rename => column_name)  
  
   angles_table_name = "/angles_$(chains_to_assemble)_chains_combined.csv"
   angles_sq_table_name = "/angles_sq_$(chains_to_assemble)_chains_combined.csv"
+  angles_numerical_fluctuations_table_name = "/angles_numerical_fluctuations_$(chains_to_assemble)_chains_combined.csv"
       
   angles_table_full_path = conf.tables_folder*angles_table_name
   angles_sq_table_full_path = conf.tables_folder*angles_sq_table_name
+  angles_numerical_fluctuations_full_path = conf.tables_folder*angles_numerical_fluctuations_table_name
       
   CSV.write(angles_table_full_path, angles_dataframe)
   CSV.write(angles_sq_table_full_path, angles_sq_dataframe)
+  CSV.write(angles_numerical_fluctuations_full_path, angles_numerical_fluctuations_dataframe)
   
   # spread is here
   # I compute spread by combining squared and angles which were previously combined between multiple chains
@@ -111,7 +126,7 @@ function angles_assemble(conf::Configuration, chains_to_assemble::Int64)
   
   CSV.write(angles_spread_table_full_path, angles_spread_dataframe)
   
-  return angles_dataframe,angles_spread_dataframe
+  return angles_dataframe, angles_spread_dataframe, angles_numerical_fluctuations_dataframe
 
 end
 
