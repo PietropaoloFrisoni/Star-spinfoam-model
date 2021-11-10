@@ -20,7 +20,9 @@ using Dates
 #=
 vec = ["Distributions", "Random", "HalfIntegers", "ParallelDataTransfer", "LoopVectorization", "BenchmarkTools", "JLD2", "LinearAlgebra", "KahanSummation", "DelimitedFiles", "ElasticArrays", "CSV", "DataFrames", "Dates", "Tullio"]
 
+import Pkg
+
 for p in vec
-import Pkg; Pkg.add("$p")
+Pkg.add("$p")
 end
 =#
