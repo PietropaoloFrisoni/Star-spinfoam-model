@@ -132,50 +132,55 @@ end
 
 function entropy_assemble(conf::Configuration, chains_to_assemble::Int64, density_matrix_linear_dim)
 
-  density_matrix_all_chains = zeros(Float64, density_matrix_linear_dim, density_matrix_linear_dim, chains_to_assemble) 
+  entropy_numerical_fluctuations = zeros(Float64, 3) 
+   
+  vec_of_entropy = zeros(Float64, chains_to_assemble)
 
   for id_chain=1:chains_to_assemble
     
-    @load "$(conf.density_matrices_folder)/density_matrix_chain=$(chain_id).jld2" density_matrix 
-      
-    density_matrix_all_chains[:, :, id_chain] = density_matrix[:, :]
+    @load "$(conf.density_matrices_folder)/density_matrix_chain=$(id_chain).jld2" density_matrix 
+
+    # it would be much better to diagonalize during the parallel phase, but for small matrices the difference is negligible 
+    density_matrix_eigenvalues = eigvals(Symmetric(density_matrix))
+    
+    entropy = 0.0
+  
+      for i=1:density_matrix_linear_dim
+      entropy -= density_matrix_eigenvalues[i]*log(Complex(density_matrix_eigenvalues[i]))
+      end 
+  
+    # discard small imaginary values due to numerical errors
+    entropy = real(entropy)
+    
+    vec_of_entropy[id_chain] = entropy
 
   end # cycle in id_chain
       
-  density_matrix_all_chains = sum(density_matrix_all_chains, dims = 3)
-  density_matrix_all_chains[:] ./= chains_to_assemble
+  # average_entropy 
+  entropy_numerical_fluctuations[1] = mean(vec_of_entropy[:])  
   
-  # trick to make disappear the third fictitious dimension (N×N×1 Array{Float64, 3} ---> N×N Matrix{Float64})
-  density_matrix_all_chains = density_matrix_all_chains[:,:]
+  # std_dev_entropy
+  entropy_numerical_fluctuations[2] = std(vec_of_entropy[:])    
   
-  for i=1:density_matrix_linear_dim, j=1:density_matrix_linear_dim  
-  @inbounds density_matrix_all_chains[j,i] = round(density_matrix_all_chains[j,i], digits = 5)
-  end      
-      
-  decomp = eigen(Symmetric(density_matrix_all_chains))
-    
-  density_matrix_eigenvalues = decomp.values
-    
-  entropy = 0.0
-  
-  for i=1:density_matrix_linear_dim
-  entropy -= density_matrix_eigenvalues[i]*log(Complex(density_matrix_eigenvalues[i]))
-  end 
-  
-  # discard small imaginary values due to numerical errors
-  entropy = real(entropy)
+  # number of combined chains
+  entropy_numerical_fluctuations[3] = chains_to_assemble       
 
-  entropy_dataframe = DataFrame(to_rename = entropy)
+  entropy_dataframe = DataFrame(to_rename = entropy_numerical_fluctuations[1])
+  entropy_numerical_fluctuations_dataframe = DataFrame(to_rename = entropy_numerical_fluctuations)
   column_name = "j=$(conf.j)"
-  rename!(entropy_dataframe, :to_rename => column_name) # julia is weird 
- 
-  entropy_table_name = "/entropy_$(chains_to_assemble)_chains_combined.csv"
-      
-  entropy_table_full_path = conf.tables_folder*entropy_table_name
+  rename!(entropy_dataframe, :to_rename => column_name) # julia is weird   
+  rename!(entropy_numerical_fluctuations_dataframe, :to_rename => column_name)  
 
-  CSV.write(entropy_table_full_path, entropy_dataframe)
+  entropy_table_name = "/entropy_$(chains_to_assemble)_chains_combined.csv"
+  entropy_numerical_fluctuations_table_name = "/entropy_numerical_fluctuations_$(chains_to_assemble)_chains_combined.csv"
+     
+  entropy_table_full_path = conf.tables_folder*entropy_table_name    
+  entropy_numerical_fluctuations_full_path = conf.tables_folder*entropy_numerical_fluctuations_table_name
+      
+  CSV.write(entropy_table_full_path, entropy_dataframe)    
+  CSV.write(entropy_numerical_fluctuations_full_path, entropy_numerical_fluctuations_dataframe)  
   
-  return entropy_dataframe
+  return entropy_dataframe, entropy_numerical_fluctuations_dataframe
   
 end
 

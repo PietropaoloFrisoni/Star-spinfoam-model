@@ -388,15 +388,23 @@ if (assemble_and_save_final_data == true)
       push!(array, "n. chains combined") 
       user_BF_volumes_numerical_fluctuations_table = DataFrame(numerical_data = array)
       user_EPRL_volumes_numerical_fluctuations_table = DataFrame(numerical_data = array) 
+      
+      # creating first column of entropy numerical fluctuations dataframe 
+      array = String[];
+      push!(array, "avg. entropy")        
+      push!(array, "std. entropy") 
+      push!(array, "n. chains combined") 
+      user_BF_entropy_numerical_fluctuations_table = DataFrame(numerical_data = array)
+      user_EPRL_entropy_numerical_fluctuations_table = DataFrame(numerical_data = array)       
   
       for user_conf in Configurations
   
         conf = init_config(user_conf, data_folder_path) 
     
-        printstyled("\nStart assembling $(number_of_chains) chain(s) for:\nM=$(conf.M), j=$(conf.j), N=$(conf.N), b=$(conf.b), σ=$(conf.σ)\n"; color = :bold) 
+        printstyled("\nStart averaging over $(number_of_chains) chain(s) for the configuration:\nM=$(conf.M), j=$(conf.j), N=$(conf.N), b=$(conf.b), σ=$(conf.σ)\n"; color = :bold) 
     
           if (conf.add_chains == true)
-          println("\nEven if you chose to add chains, only $(number_of_chains) chains are assembled for every operator\n")        
+          println("\nEven if you chose to add chains, only $(number_of_chains) chains are averaged for every operator\n")        
           end        
   
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
@@ -462,9 +470,11 @@ if (assemble_and_save_final_data == true)
             density_matrix_linear_dim = conf.D^(size(conf.subsystem)[1])
             entropy_dataframe = entropy_assemble(conf, number_of_chains, density_matrix_linear_dim)      
                 if (conf.M == "BF")
-            global user_BF_entropy_table = hcat(user_BF_entropy_table, entropy_dataframe) 
+            global user_BF_entropy_table = hcat(user_BF_entropy_table, entropy_dataframe[1]) 
+            global user_BF_entropy_numerical_fluctuations_table = hcat(user_BF_entropy_numerical_fluctuations_table, entropy_dataframe[2]) 
                 else
-            global user_EPRL_entropy_table = hcat(user_EPRL_entropy_table, entropy_dataframe)         
+            global user_EPRL_entropy_table = hcat(user_EPRL_entropy_table, entropy_dataframe[1]) 
+            global user_EPRL_entropy_numerical_fluctuations_table = hcat(user_EPRL_entropy_numerical_fluctuations_table, entropy_dataframe[2])     
                 end 
             end # if on entropy computation                 
                  
@@ -582,9 +592,11 @@ if (assemble_and_save_final_data == true)
       if (isempty(user_BF_entropy_table) == false)
  
        CSV.write("$(store_final_data_path)/BF_entropy_table.csv", user_BF_entropy_table)   
+       CSV.write("$(store_final_data_path)/BF_entropy_numerical_fluctuations_table.csv", user_BF_entropy_numerical_fluctuations_table)   
    
        if (print_final_data_on_terminal == true)
        println("These are the values of the BF entropy for the subsystem that you asked for:\n", user_BF_entropy_table, "\n")
+       println("These are the data specifying numerical fluctuations of the BF entropy:\n", user_BF_entropy_numerical_fluctuations_table, "\n")
        end
   
      end  
@@ -592,9 +604,11 @@ if (assemble_and_save_final_data == true)
       if (isempty(user_EPRL_entropy_table) == false)
  
        CSV.write("$(store_final_data_path)/EPRL_entropy_table.csv", user_EPRL_entropy_table)   
+       CSV.write("$(store_final_data_path)/EPRL_entropy_numerical_fluctuations_table.csv", user_EPRL_entropy_numerical_fluctuations_table) 
    
        if (print_final_data_on_terminal == true)
        println("These are the values of the EPRL entropy for the subsystem that you asked for:\n", user_EPRL_entropy_table, "\n")
+       println("These are the data specifying numerical fluctuations of the EPRL entropy:\n", user_EPRL_entropy_numerical_fluctuations_table, "\n")
        end
   
      end       
@@ -605,12 +619,12 @@ if (assemble_and_save_final_data == true)
      Configurations_computed_in_this_run_file = store_final_data_path*"/Configurations_computed_in_this_run.txt"
      cp(configs_to_compute_file, Configurations_computed_in_this_run_file)
 
-     printstyled("Chains were assembled successfully! The stored operators for each configuration have been saved in $(data_folder_path)/data_star_model\n\n"; color = :bold)
+     printstyled("Chains were combined successfully! The stored operators for each configuration have been saved in $(data_folder_path)/data_star_model\n\n"; color = :bold)
 
-     printstyled("The final assembled data have been saved in 'final_data' folder\n\n"; bold = true, color = :blue) 
+     printstyled("The final combined data have been saved in 'final_data' folder\n\n"; bold = true, color = :blue) 
  
 else    
 
-     printstyled("Chains have not been assembled. The stored operators for each configuration have been saved in $(data_folder_path)/data_star_model\n\n"; color = :bold) 
+     printstyled("Chains have not been combined. The stored operators for each configuration have been saved in $(data_folder_path)/data_star_model\n\n"; color = :bold) 
 
 end # if on assemble_and_save_final_data 
