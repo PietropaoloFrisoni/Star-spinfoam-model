@@ -14,17 +14,12 @@ assemble_and_save_final_data = true
 print_final_data_on_terminal = true
 
 # usage example
-Configurations = [[0.5, "EPRL", 10^7, 10^3, 0.35, [true, false], [false, false], [false, false, 1, 2], [false, [1]]],
-                  [0.5, "BF", 10^7, 10^3, 0.35, [true, false], [false, false], [false, false, 1, 2], [false, [1]]],
-                  [1.0, "BF", 10^7, 10^3, 0.35, [true, false], [false, false], [false, false, 1, 2], [false, [1]]],
-                  [1.5, "BF", 10^7, 10^3, 0.35, [true, false], [false, false], [false, false, 1, 2], [false, [1]]],
-                  [2.0, "BF", 10^7, 10^3, 0.35, [true, false], [false, false], [false, false, 1, 2], [false, [1]]],
-                  [2.5, "BF", 10^7, 10^3, 0.35, [true, false], [false, false], [false, false, 1, 2], [false, [1]]],
-                  [3.0, "BF", 10^7, 10^3, 0.35, [true, false], [false, false], [false, false, 1, 2], [false, [1]]],
-                  [3.5, "BF", 10^7, 10^3, 0.35, [true, false], [false, false], [false, false, 1, 2], [false, [1]]],
-                  [4.0, "BF", 10^7, 10^3, 0.35, [true, false], [false, false], [false, false, 1, 2], [false, [1]]],
-                  [4.5, "BF", 10^7, 10^3, 0.35, [true, false], [false, false], [false, false, 1, 2], [false, [1]]],
-                  [5.0, "BF", 10^7, 10^3, 0.35, [true, false], [false, false], [false, false, 1, 2], [false, [1]]],
-                  [5.5, "BF", 10^7, 10^3, 0.35, [true, false], [false, false], [false, false, 1, 2], [false, [1]]],
-                  [6.0, "BF", 10^7, 10^3, 0.35, [true, false], [false, false], [false, false, 1, 2], [false, [1]]],
+Configurations = [[0.5, "BF", 10^6, 10^3, 0.40, [true, false], [true, true], [true, true, 1, 2], [true, [1]]],
+                  [1.0, "BF", 10^6, 10^3, 0.38, [true, false], [true, true], [true, true, 1, 2], [true, [1]]],
+                  [1.5, "BF", 10^6, 10^3, 0.35, [true, false], [true, true], [true, true, 1, 2], [true, [1]]],
+                  [2.0, "BF", 2*10^6, 10^3, 0.35, [true, false], [true, true], [true, true, 1, 2], [true, [1]]],
+                  [0.5, "EPRL", 10^6, 10^3, 0.40, [true, false], [true, true], [true, true, 1, 2], [true, [1]]],
+                  [1.0, "EPRL", 10^6, 10^3, 0.40, [true, false], [true, true], [true, true, 1, 2], [true, [1]]],
+                  [1.5, "EPRL", 10^6, 10^3, 0.38, [true, false], [true, true], [true, true, 1, 2], [true, [1]]],
+                  [2.0, "EPRL", 2*10^6, 10^3, 0.38, [true, false], [true, true], [true, true, 1, 2], [true, [1]]],
                   ]
