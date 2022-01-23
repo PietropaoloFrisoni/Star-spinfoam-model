@@ -31,6 +31,8 @@ A full list of the packages used in this code can be found in the file "/inc/pkg
 
 **Finally, notice that the julia's Just-in-Time compiler is such that the first execution of the random walk and operators' computation is considerably slower that following ones, and it also allocates much more memory**. To avoid this, you can use the [DaemonMode package](https://github.com/dmolina/DaemonMode.jl).
 
+![Alt text](/home/frisus95/Scaricati/RW_benchmark.pdf?raw=true "Random walk benchmark")
+
 ## Usage:
 
 ```
