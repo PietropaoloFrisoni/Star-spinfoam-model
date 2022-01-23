@@ -1,6 +1,6 @@
 # Computation of star spin foam amplitude
 
-**To use this code, you just need to interact with the file "configs_to_compute.jl", specifying the configurations that you want to compute and the M-H parameters for the computation.**
+**This code can be used simply interacting with the file "configs_to_compute.jl", specifying the configurations that you want to compute and the M-H parameters for the computation.**
 
 
 The usage, as well as the meaning of the various flags, is explained in this document (see sections below). 
@@ -95,11 +95,11 @@ See "configs_to_compute".
 
 #### Current limitations:
 
+- The contraction of vertex amplitudes on the GPU is not currently implemented. This would improve significantly the performance for large spins
+
+- The algorithm is written in such a way as to perform the random walk and compute the observables in the same run, using the same number of resources. The two phases could be totally separated, in such a way as to parallelize the computation of observables over an arbitrary number of tasks (which already happens) by also exploiting an arbitrary number of CPUs for each task, that is, for each Markov chain. So far, this has only been done for the density matrix computation, where each chain can use an arbitrary number of threads, making it possible to compute such a matrix for a subsystem with many nodes
+
 - If "add_chain" is true, even if in some cases it is possible to assemble more chains than those chosen by the user (this depends on the operators previously stored and on those that the user wants to compute for each configuration), the code only assembles a number of chains corresponding to that chosen by the user
-
-- The contraction of vertex amplitudes on the GPU is not currently implemented. This would probably improve significantly the performance for large spins
-
-- The algorithm is written in such a way as to perform the random walk and compute the observables in the same run, using the same number of resources. The two phases could be totally separated, in such a way as to parallelize the computation of observables over an arbitrary number of tasks (which already happens) by also exploiting an arbitrary number of CPUs for each task, that is, for each Markov chain. This would make the computation of observables considerably faster
 
 
 
