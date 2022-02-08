@@ -7,6 +7,8 @@ The usage, as well as the meaning of the various flags, is explained in this doc
 
 ***The code builds a Markov chain for each julia process and the latter are parallelized on the available cores.***
 
+![alt text](https://github.com/PietropaoloFrisoni/Star-spinfoam-model/blob/master/RW_benchmark.pdf?raw=true)
+
 After choosing the configurations to compute, in order to execute the code (on a single machine with the synthax below) just run the following command:
 
 ```
@@ -93,14 +95,11 @@ A full list of the packages used in this code can be found in the file "/inc/pkg
 See "configs_to_compute".
 
 
-## Compatibility:
-
-The code was written with *julia 1.6.2* and tested up to *julia 1.7.0*. Curiously, the computation of angles correlation is significantly slower with *julia 1.7.0*
-and it allocates much more memory. Unfortunately, I don't have time to update and optimize the code with new julia versions, so for best performance I recommed *julia 1.6.2*.
-
-
 
 #### Current limitations:
+
+- The code was written with *julia 1.6.2* and tested up to *julia 1.7.0*. Curiously, the computation of angles correlation is significantly slower with *julia 1.7.0*
+and it allocates much more memory. Unfortunately, I don't have time to update and optimize the code with new julia versions, so for best performance I recommed *julia 1.6.2*.
 
 - The contraction of vertex amplitudes on the GPU is not currently implemented. This would improve significantly the performance for large spins
 
