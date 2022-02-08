@@ -101,11 +101,13 @@ See "configs_to_compute".
 - The code was written with *julia 1.6.2* and tested up to *julia 1.7.0*. Curiously, the computation of angles correlation is significantly slower with *julia 1.7.0*
 and it allocates much more memory. Unfortunately, I don't have time to update and optimize the code with new julia versions, so for best performance I recommed *julia 1.6.2*.
 
-- The contraction of vertex amplitudes on the GPU is not currently implemented. This would improve significantly the performance for large spins
+- The random walk over the spins could be faster by pre-allocating memory assuming >~ 30% as acceptation rate for the draws, eventually re-allocating memory on the heap only at the end.
 
-- The algorithm is written in such a way as to perform the random walk and compute the observables in the same run, using the same number of resources. The two phases could be totally separated, in such a way as to parallelize the computation of observables over an arbitrary number of tasks (which already happens) by also exploiting an arbitrary number of CPUs for each task, that is, for each Markov chain. So far, this has only been done for the density matrix computation, where each chain can use an arbitrary number of threads, making it possible to compute such a matrix for a subsystem with many nodes
+- The contraction of vertex amplitudes on the GPU is not currently implemented. This would improve significantly the performance for large spins.
 
-- If "add_chain" is true, even if in some cases it is possible to assemble more chains than those chosen by the user (this depends on the operators previously stored and on those that the user wants to compute for each configuration), the code only assembles a number of chains corresponding to that chosen by the user
+- The algorithm is written in such a way as to perform the random walk and compute the observables in the same run, using the same number of resources. The two phases could be totally separated, in such a way as to parallelize the computation of observables over an arbitrary number of tasks (which already happens) by also exploiting an arbitrary number of CPUs for each task, that is, for each Markov chain. So far, this has only been done for the density matrix computation, where each chain can use an arbitrary number of threads, making it possible to compute such a matrix for a subsystem with many nodes.
+
+- If "add_chain" is true, even if in some cases it is possible to assemble more chains than those chosen by the user (this depends on the operators previously stored and on those that the user wants to compute for each configuration), the code only assembles a number of chains corresponding to that chosen by the user.
 
 
 
