@@ -41,21 +41,12 @@ function volume_matrix(js, D::Int64, d::Int64)
         ld = .-ud                            
         zd = zeros(Complex{Float64}, D)
         A = convert(Array, Tridiagonal(ld, zd, ud)) 
-
-        # @show A
         
         # eigvals and vectors
         decomp = eigen(Hermitian(A))
-     
-        # eigen(A; permute::Bool=true, scale::Bool=true, sortby) -> Eigen
-        # Computes the eigenvalue decomposition of A, returning an Eigen factorization object F which contains the eigenvalues in F.values and 
-        # the eigenvectors in the columns of the matrix F.vectors. (The kth eigenvector can be obtained from the slice F.vectors[:, k].)
         
         qs = decomp.values
-        Qs = decomp.vectors # I assume that i-th vector correspo to i-th eigval (done simple check)
-        
-        # @show decomp.values
-        # @show decomp.vectors
+        Qs = decomp.vectors 
        
         for k in 1:D
             for kp in 1:D
@@ -77,7 +68,7 @@ function volume_matrix(js, D::Int64, d::Int64)
         end
        
         V[j] = copy(Float64.(real(Vj))) # discard small imaginary values due to numerical errors
-        V2[j] = copy(Float64.(real(V2j))) # this is equal to Vj squared ...
+        V2[j] = copy(Float64.(real(V2j))) # this is equal to Vj squared 
     end
    
     V 

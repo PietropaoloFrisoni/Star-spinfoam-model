@@ -127,13 +127,13 @@ println("-----------------------------------------------------------------------
           if (conf.add_chains == true)
               if (chain_id == 1) 
               println("There are $(conf.total_angles_already_stored) angles already stored for this configuration, and $(number_of_chains) will be added\n") 
-              @time compute_angles_function!(conf.j_half_int, conf.D, draws, number_of_draws, angles, angles_sq, angles_vector_values, conf.N, conf.b, conf.angles_folder, conf.angles_sq_folder, chain_id, conf.total_angles_already_stored)
+              compute_angles_function!(conf.j_half_int, conf.D, draws, number_of_draws, angles, angles_sq, angles_vector_values, conf.N, conf.b, conf.angles_folder, conf.angles_sq_folder, chain_id, conf.total_angles_already_stored)
               else
               compute_angles_function!(conf.j_half_int, conf.D, draws, number_of_draws, angles, angles_sq, angles_vector_values, conf.N, conf.b, conf.angles_folder, conf.angles_sq_folder, chain_id, conf.total_angles_already_stored)
               end   
           else    
               if (chain_id == 1) 
-              @time compute_angles_function!(conf.j_half_int, conf.D, draws, number_of_draws, angles, angles_sq, angles_vector_values, conf.N, conf.b, conf.angles_folder, conf.angles_sq_folder, chain_id)
+              compute_angles_function!(conf.j_half_int, conf.D, draws, number_of_draws, angles, angles_sq, angles_vector_values, conf.N, conf.b, conf.angles_folder, conf.angles_sq_folder, chain_id)
               else
               compute_angles_function!(conf.j_half_int, conf.D, draws, number_of_draws, angles, angles_sq, angles_vector_values, conf.N, conf.b, conf.angles_folder, conf.angles_sq_folder, chain_id)
               end                  
@@ -168,13 +168,13 @@ println("-----------------------------------------------------------------------
             if (conf.add_chains == true)
                 if (chain_id == 1) 
                 println("There are $(conf.total_angles_pseudo_correlations_already_stored) operators <A_n,A_m> already stored for this configuration, and $(number_of_chains) will be added\n") 
-                @time compute_angles_pseudo_correlations_function!(conf.j_half_int, conf.d, draws, number_of_draws, angles_pseudo_correlations, angles_vector_values, conf.N, conf.b, conf.angles_pseudo_correlations_folder, chain_id, conf.total_angles_pseudo_correlations_already_stored)
+                compute_angles_pseudo_correlations_function!(conf.j_half_int, conf.d, draws, number_of_draws, angles_pseudo_correlations, angles_vector_values, conf.N, conf.b, conf.angles_pseudo_correlations_folder, chain_id, conf.total_angles_pseudo_correlations_already_stored)
                 else
                 compute_angles_pseudo_correlations_function!(conf.j_half_int, conf.d, draws, number_of_draws, angles_pseudo_correlations, angles_vector_values, conf.N, conf.b, conf.angles_pseudo_correlations_folder, chain_id, conf.total_angles_pseudo_correlations_already_stored)
                 end     
             else    
                 if (chain_id == 1) 
-                @time compute_angles_pseudo_correlations_function!(conf.j_half_int, conf.d, draws, number_of_draws, angles_pseudo_correlations, angles_vector_values, conf.N, conf.b, conf.angles_pseudo_correlations_folder, chain_id)
+                compute_angles_pseudo_correlations_function!(conf.j_half_int, conf.d, draws, number_of_draws, angles_pseudo_correlations, angles_vector_values, conf.N, conf.b, conf.angles_pseudo_correlations_folder, chain_id)
                 else
                 compute_angles_pseudo_correlations_function!(conf.j_half_int, conf.d, draws, number_of_draws, angles_pseudo_correlations, angles_vector_values, conf.N, conf.b, conf.angles_pseudo_correlations_folder, chain_id)
                 end                   
@@ -217,13 +217,13 @@ println("-----------------------------------------------------------------------
             if (conf.add_chains == true)       
                 if (chain_id == 1) 
                 println("There are $(conf.total_volumes_already_stored) volumes already stored for this configuration, and $(number_of_chains) will be added\n") 
-                @time compute_volumes_function!(conf.j_half_int, conf.D, vertex, draws, number_of_draws, ampls, volumes, volumes_sq, volumes_matrix_values, conf.N, conf.b, conf.volumes_folder, conf.volumes_sq_folder, chain_id, conf.total_volumes_already_stored)  
+                compute_volumes_function!(conf.j_half_int, conf.D, vertex, draws, number_of_draws, ampls, volumes, volumes_sq, volumes_matrix_values, conf.N, conf.b, conf.volumes_folder, conf.volumes_sq_folder, chain_id, conf.total_volumes_already_stored)  
                 else
                 compute_volumes_function!(conf.j_half_int, conf.D, vertex, draws, number_of_draws, ampls, volumes, volumes_sq, volumes_matrix_values, conf.N, conf.b, conf.volumes_folder, conf.volumes_sq_folder, chain_id, conf.total_volumes_already_stored) 
                 end   
             else      
                 if (chain_id == 1) 
-                @time compute_volumes_function!(conf.j_half_int, conf.D, vertex, draws, number_of_draws, ampls, volumes, volumes_sq, volumes_matrix_values, conf.N, conf.b, conf.volumes_folder, conf.volumes_sq_folder, chain_id)  
+                compute_volumes_function!(conf.j_half_int, conf.D, vertex, draws, number_of_draws, ampls, volumes, volumes_sq, volumes_matrix_values, conf.N, conf.b, conf.volumes_folder, conf.volumes_sq_folder, chain_id)  
                 else
                 compute_volumes_function!(conf.j_half_int, conf.D, vertex, draws, number_of_draws, ampls, volumes, volumes_sq, volumes_matrix_values, conf.N, conf.b, conf.volumes_folder, conf.volumes_sq_folder, chain_id) 
                 end               
@@ -264,13 +264,13 @@ println("-----------------------------------------------------------------------
             if (conf.add_chains == true)
                 if (chain_id == 1) 
                 println("There are $(conf.total_volumes_pseudo_correlations_already_stored) operators <V_$(conf.volumes_correlations_node_1),V_$(conf.volumes_correlations_node_2)> already stored for this configuration, and $(number_of_chains) will be added\n")
-                @time compute_volumes_pseudo_correlations_function!(conf.j_half_int, conf.D, draws, number_of_draws, ampls, vertex, volumes_pseudo_correlations, volumes_matrix_values, conf.N, conf.b, conf.volumes_pseudo_correlations_folder, chain_id, conf.volumes_correlations_node_1, conf.volumes_correlations_node_2, conf.total_volumes_pseudo_correlations_already_stored)
+                compute_volumes_pseudo_correlations_function!(conf.j_half_int, conf.D, draws, number_of_draws, ampls, vertex, volumes_pseudo_correlations, volumes_matrix_values, conf.N, conf.b, conf.volumes_pseudo_correlations_folder, chain_id, conf.volumes_correlations_node_1, conf.volumes_correlations_node_2, conf.total_volumes_pseudo_correlations_already_stored)
                 else
                 compute_volumes_pseudo_correlations_function!(conf.j_half_int, conf.D, draws, number_of_draws, ampls, vertex, volumes_pseudo_correlations, volumes_matrix_values, conf.N, conf.b, conf.volumes_pseudo_correlations_folder, chain_id, conf.volumes_correlations_node_1, conf.volumes_correlations_node_2, conf.total_volumes_pseudo_correlations_already_stored)
                 end   
             else
                 if (chain_id == 1) 
-                @time compute_volumes_pseudo_correlations_function!(conf.j_half_int, conf.D, draws, number_of_draws, ampls, vertex, volumes_pseudo_correlations, volumes_matrix_values, conf.N, conf.b, conf.volumes_pseudo_correlations_folder, chain_id, conf.volumes_correlations_node_1, conf.volumes_correlations_node_2)
+                compute_volumes_pseudo_correlations_function!(conf.j_half_int, conf.D, draws, number_of_draws, ampls, vertex, volumes_pseudo_correlations, volumes_matrix_values, conf.N, conf.b, conf.volumes_pseudo_correlations_folder, chain_id, conf.volumes_correlations_node_1, conf.volumes_correlations_node_2)
                 else
                 compute_volumes_pseudo_correlations_function!(conf.j_half_int, conf.D, draws, number_of_draws, ampls, vertex, volumes_pseudo_correlations, volumes_matrix_values, conf.N, conf.b, conf.volumes_pseudo_correlations_folder, chain_id, conf.volumes_correlations_node_1, conf.volumes_correlations_node_2)
                 end              
@@ -313,13 +313,13 @@ println("-----------------------------------------------------------------------
             if (conf.add_chains == true)
                 if (chain_id == 1) 
                 println("There are $(conf.total_density_matrices_already_stored) density matrices for subsystem $(conf.subsystem) already stored for this configuration, and $(number_of_chains) will be added\n")
-                @time compute_density_matrix_function!(conf.j, conf.D, vertex, draws, number_of_draws, ampls, density_matrix, conf.N, conf.b, conf.density_matrices_folder, chain_id, conf.subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim, conf.total_density_matrices_already_stored)                                
+                compute_density_matrix_function!(conf.j, conf.D, vertex, draws, number_of_draws, ampls, density_matrix, conf.N, conf.b, conf.density_matrices_folder, chain_id, conf.subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim, conf.total_density_matrices_already_stored)                                
                 else
                 compute_density_matrix_function!(conf.j, conf.D, vertex, draws, number_of_draws, ampls, density_matrix, conf.N, conf.b, conf.density_matrices_folder, chain_id, conf.subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim, conf.total_density_matrices_already_stored)           
                 end   
             else
                 if (chain_id == 1) 
-                @time compute_density_matrix_function!(conf.j, conf.D, vertex, draws, number_of_draws, ampls, density_matrix, conf.N, conf.b, conf.density_matrices_folder, chain_id, conf.subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim) 
+                compute_density_matrix_function!(conf.j, conf.D, vertex, draws, number_of_draws, ampls, density_matrix, conf.N, conf.b, conf.density_matrices_folder, chain_id, conf.subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim) 
                 else
                 compute_density_matrix_function!(conf.j, conf.D, vertex, draws, number_of_draws, ampls, density_matrix, conf.N, conf.b, conf.density_matrices_folder, chain_id, conf.subsystem, number_of_nodes_in_subsystem, density_matrix_linear_dim) 
                 end              

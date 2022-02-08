@@ -93,6 +93,12 @@ A full list of the packages used in this code can be found in the file "/inc/pkg
 See "configs_to_compute".
 
 
+## Compatibility:
+
+The code was written with *julia 1.6.2* and tested up to *julia 1.7.0*. Curiously, the computation of angles correlation is significantly slower with *julia 1.7.0*
+and it allocates much more memory. Unfortunately, I don't have time to update and optimize the code with new julia versions, so for best performance I recommed *julia 1.6.2*.
+
+
 
 #### Current limitations:
 

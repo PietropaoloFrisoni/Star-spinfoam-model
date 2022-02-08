@@ -116,6 +116,8 @@ function random_walk_function(j::Float64, D::Int64, d::Int64, A::Array{Float64, 
                 end   
 
                     if(n>b)
+                    # TODO avoid resizing at every iteration (pre-allocating assuming >~ 30% accept. rate and re-allocated only at the end) 
+                    # and eventually replace matrices with 1-d arrays (more efficient?)
                     resize!(draws, 21, size(draws)[2]+1)     # some allocations
                     resize!(ampls, size(ampls)[1]+1)         # some allocations
                     draw[21] = molteplicity
