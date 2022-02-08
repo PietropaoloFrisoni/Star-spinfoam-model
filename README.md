@@ -7,7 +7,7 @@ The usage, as well as the meaning of the various flags, is explained in this doc
 
 ***The code builds a Markov chain for each julia process and the latter are parallelized on the available cores.***
 
-![alt text](https://github.com/PietropaoloFrisoni/Star-spinfoam-model/blob/master/RW_benchmark.pdf?raw=true)
+![alt text](https://github.com/PietropaoloFrisoni/Star-spinfoam-model/blob/master/RW_benchmark.SVG?raw=true)
 
 After choosing the configurations to compute, in order to execute the code (on a single machine with the synthax below) just run the following command:
 
